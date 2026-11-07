@@ -1,0 +1,10 @@
+project_id = "ydwqnlovmhtwgbnxeoci"
+
+[functions.btcpay-webhook]
+verify_jwt = false
+
+[functions.create-btc-invoice]
+verify_jwt = true
+
+[functions.get-content-url]
+verify_jwt = false
