@@ -34,4 +34,5 @@ export interface ContentItem {
   currency: string;
   duration_seconds: number | null;
   published_at: string | null;
+  sort_order?: number;
 }

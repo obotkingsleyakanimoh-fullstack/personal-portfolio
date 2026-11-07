@@ -34,7 +34,7 @@ export function useContent(type?: 'image' | 'video') {
     queryKey: ['content-public', type],
     queryFn: async () => {
       if (!supabase) return fallbackContent.filter((item) => !type || item.content_type === type);
-      let query = supabase.from('content_public').select('*').order('published_at', { ascending: false });
+      let query = supabase.from('content_public').select('*').order('sort_order', { ascending: true }).order('published_at', { ascending: false });
       if (type) query = query.eq('content_type', type);
       const { data, error } = await query;
       if (error) throw error;

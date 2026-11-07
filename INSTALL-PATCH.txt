@@ -1,0 +1,31 @@
+ATELIER AFTER DARK — DYNAMIC ASSETS / OWNER APPEARANCE PATCH
+
+This is a PATCH ONLY. It contains changed/new files, not the full application.
+
+1) Copy the src/ folder contents into the matching locations in your existing project, allowing the files to replace their current versions.
+2) Copy the SQL migration into your existing supabase/migrations/ folder.
+3) Apply migration 202611070004_owner_managed_site_appearance.sql AFTER migrations 001, 002 and 003.
+   Supabase Dashboard: SQL Editor > New query > paste the migration SQL > Run.
+   Or use `supabase db push` after the migration file is in your linked local project.
+4) Commit and push the frontend files to GitHub so Vercel deploys them.
+
+OWNER STUDIO
+- Open /admin and select Appearance.
+- Replace the seven fixed artwork positions: homepage hero, homepage introduction, homepage membership feature, About portrait, checkout portrait, Videos feature, and login/register artwork.
+- Upload still images in JPEG, PNG, WebP or AVIF; they are resized and converted to WebP.
+- Upload short public-safe feature videos in MP4 or WebM. They remain video files, not WebP.
+- Alternatively, select a published public-safe WebP cover from My Content to reuse it in a fixed artwork position.
+- Adjust the nine global website colours and save the palette.
+- In Content, use the up/down arrows to arrange the gallery and video library order. This also controls the homepage's three featured collection cards.
+
+STORAGE / PRIVACY
+- `site-assets` is public and is only for non-explicit artwork and public-safe short video teasers.
+- `content-previews` is public and stores non-explicit WebP gallery/video covers.
+- `private-content` remains private and stores full original photographs and videos.
+- `private-messages` remains private for private chat attachments.
+- Unsplash URLs remain as fallbacks until the owner replaces a slot.
+
+CHECKS
+- All 12 TypeScript/TSX source files passed syntax parsing.
+- All relative source imports resolved.
+- A full `npm run build` was not run here because this environment does not have the project dependencies installed. Run `npm install` and `npm run build` locally before production deployment.

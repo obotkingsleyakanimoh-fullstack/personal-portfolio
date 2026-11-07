@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useRouterState } from '@tanstack/react-router';
 import { ArrowUpRight, ChevronDown, Heart, LogOut, Menu, MessageCircle, UserRound, X } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import { ownerName, siteName } from '../lib/supabase';
+import { defaultSiteTheme, useSiteTheme } from '../lib/siteSettings';
 
 const publicLinks = [
   { label: 'Home', to: '/' },
@@ -14,6 +15,19 @@ const publicLinks = [
 
 export function SiteLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: siteTheme = defaultSiteTheme } = useSiteTheme();
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--site-primary', siteTheme.primary);
+    root.style.setProperty('--site-accent', siteTheme.accent);
+    root.style.setProperty('--site-background', siteTheme.background);
+    root.style.setProperty('--site-surface', siteTheme.surface);
+    root.style.setProperty('--site-text', siteTheme.text);
+    root.style.setProperty('--site-muted', siteTheme.muted);
+    root.style.setProperty('--site-deep', siteTheme.deep);
+    root.style.setProperty('--site-highlight', siteTheme.highlight);
+    root.style.setProperty('--site-border', siteTheme.border);
+  }, [siteTheme]);
   const [ageAccepted, setAgeAccepted] = useState(() => { try { return window.localStorage.getItem('atelier-adult-entry') === 'accepted'; } catch { return false; } });
   const acceptAdultEntry = () => { try { window.localStorage.setItem('atelier-adult-entry', 'accepted'); } catch { /* The entry confirmation still applies for this page session. */ } setAgeAccepted(true); };
   const leaveAdultEntry = () => { window.location.href = 'https://www.google.com/'; };

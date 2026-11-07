@@ -249,3 +249,145 @@ body{background:#fbf5f3;color:#2b1a24}
 .media-upload-progress small{min-width:88px;text-align:right;color:#806b76;font-variant-numeric:tabular-nums}
 .file-field small{display:block;max-width:760px;line-height:1.65;margin-top:7px}
 @media(max-width:760px){.media-upload-progress{max-width:100%}.media-upload-progress small{min-width:76px}}
+
+/* Owner-managed appearance theme. Values are supplied by the site_appearance table. */
+:root{--site-primary:#54253c;--site-accent:#c17c91;--site-background:#fbf5f3;--site-surface:#f1e2e4;--site-text:#2b1a24;--site-muted:#907b83;--site-deep:#321923;--site-highlight:#d6a0ae;--site-border:#e8d8dc;--ink:var(--site-text);--paper:var(--site-background);--cream:var(--site-surface);--wine:var(--site-primary);--rose:var(--site-accent);--brass:var(--site-highlight);--muted:var(--site-muted);--line:var(--site-border)}
+html,body{background:var(--site-background);color:var(--site-text)}
+.site-header{background:var(--site-background)!important;border-color:var(--site-border)!important}
+.site-header-inner,.mobile-nav-panel{background:var(--site-background)}
+.announcement-bar{background:var(--site-deep)!important;color:var(--site-surface)!important}
+.brand-mark{color:var(--site-primary)!important;border-color:var(--site-accent)!important}
+.brand-copy small{color:var(--site-muted)!important}
+.nav-link:after,.button-dark,.chat-send{background:var(--site-primary)!important}
+.nav-link:hover,.nav-link.active,.header-login:hover,.nav-link.active{color:var(--site-primary)!important}
+.button-dark{border-color:var(--site-primary)!important;color:#fff!important}
+.button-dark:hover{background:var(--site-accent)!important;border-color:var(--site-accent)!important}
+.button-cream{background:var(--site-surface)!important;border-color:var(--site-surface)!important;color:var(--site-text)!important}
+.button-outline-dark{border-color:var(--site-primary)!important;color:var(--site-primary)!important}
+.hero-section,.site-footer{background:var(--site-deep)!important}
+.hero-content h1 em,.section-heading h2 em,.intro-copy h2 em,.membership-feature-copy h2 em,.page-hero h1 em,.page-intro h1 em,.checkout-main h1 em,.dashboard-welcome h1 em,.chat-heading h1 em,.video-feature-copy h2 em,.video-list-heading h2 em,.legal-page h1 em,.contact-page h1 em{color:var(--site-accent)!important}
+.hero-kicker,.hero-note,.hero-vertical-note,.hero-bottom-rule{color:var(--site-highlight)!important}
+.kicker-line,.hero-note-icon{border-color:var(--site-highlight)!important;background-color:var(--site-highlight)}
+.hero-description,.intro-lead,.muted-copy,.page-intro p,.page-hero p,.about-body-copy p,.video-feature-copy p{color:var(--site-muted)}
+.hero-image-shade{background:linear-gradient(0deg,color-mix(in srgb,var(--site-deep) 50%,transparent),transparent 54%)!important}
+.site-footer{color:var(--site-surface)}
+.site-artwork-video{width:100%;height:100%;object-fit:cover;display:block}
+.video-feature-image>video{width:100%;height:100%;object-fit:cover;display:block}
+
+/* Owner Studio: appearance controls and reorder tools */
+.appearance-admin-panel{display:flex;flex-direction:column;gap:24px}
+.appearance-theme-panel{padding:24px}
+.appearance-theme-panel .admin-panel-heading{display:block}
+.appearance-theme-panel .admin-panel-heading p{color:var(--site-muted);font-size:10px;line-height:1.7;max-width:560px}
+.appearance-color-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:20px 0}
+.appearance-color-field{display:flex;flex-direction:column;gap:7px;padding:12px;border:1px solid var(--site-border);background:var(--site-background)}
+.appearance-color-field>span{font-size:10px;font-weight:600;color:var(--site-text)}
+.appearance-color-field>small{font-size:8px;line-height:1.5;color:var(--site-muted);min-height:25px}
+.appearance-color-field>div{display:flex;align-items:center;gap:8px}
+.appearance-color-field input[type=color]{width:42px;height:34px;padding:2px;border:1px solid var(--site-border);background:var(--site-background);cursor:pointer}
+.appearance-color-field input[type=text]{width:100%;min-width:0;padding:9px;border:1px solid var(--site-border);background:white;color:#32212a;font-size:10px;text-transform:uppercase}
+.appearance-theme-preview{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:18px;border:1px solid;margin:0 0 18px}
+.appearance-theme-preview>div{display:flex;flex-direction:column;gap:5px;margin-right:auto}
+.appearance-theme-preview strong{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600}
+.appearance-theme-preview span,.appearance-theme-preview em{font-size:10px}
+.appearance-theme-preview button,.appearance-preview-chip{border:1px solid;padding:9px 13px;border-radius:99px;font-size:9px}
+.appearance-assets-section{display:flex;flex-direction:column;gap:14px}
+.appearance-asset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.appearance-asset-card{border:1px solid var(--site-border);background:#fffaf8;min-width:0;overflow:hidden}
+.appearance-asset-preview{height:220px;background:var(--site-surface);position:relative;overflow:hidden}
+.appearance-asset-preview img,.appearance-asset-preview video{width:100%;height:100%;object-fit:cover;display:block}
+.appearance-asset-preview>span{position:absolute;left:12px;top:12px;padding:6px 9px;background:#301923dc;color:white;font-size:7px;letter-spacing:.13em}
+.appearance-asset-body{padding:17px;display:flex;flex-direction:column;gap:12px}
+.appearance-asset-body h3{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;margin:0;color:var(--site-text)}
+.appearance-asset-body p{font-size:9px;line-height:1.65;color:var(--site-muted);margin:0;min-height:30px}
+.appearance-asset-body .file-field{display:flex;flex-direction:column;gap:7px;font-size:9px;color:var(--site-text)}
+.appearance-asset-body input[type=file]{font-size:9px;max-width:100%}
+.appearance-selected-file{font-size:8px;color:var(--site-primary);overflow-wrap:anywhere}
+.appearance-alt-field{display:flex;flex-direction:column;gap:6px;font-size:8px;color:var(--site-muted)}
+.appearance-alt-field input{padding:9px;border:1px solid var(--site-border);background:white;font-size:9px;color:var(--site-text)}
+.appearance-asset-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.appearance-asset-actions .button{min-height:36px;padding:9px 15px;font-size:8px}
+.appearance-help-panel{display:flex;align-items:flex-start;gap:14px}
+.appearance-help-panel>svg{flex:0 0 auto;color:var(--site-primary)}
+.appearance-help-panel p{font-size:9px;line-height:1.7;color:var(--site-muted)}
+.appearance-help-panel code{font-size:8px;color:var(--site-primary)}
+.content-order-controls{display:flex;align-items:center;gap:4px}
+.content-order-controls .small-link{min-width:24px;height:24px;border:1px solid var(--site-border);background:var(--site-background);color:var(--site-primary);padding:2px}
+.content-order-controls .small-link:disabled{opacity:.3;cursor:not-allowed}
+
+@media(max-width:760px){.appearance-color-grid,.appearance-asset-grid{grid-template-columns:1fr}.appearance-theme-panel{padding:16px}.appearance-theme-preview{align-items:flex-start;flex-direction:column}.appearance-asset-preview{height:190px}.content-order-controls .small-link{min-width:29px;height:29px}}
+
+@media(max-width:760px){.admin-sidebar{grid-template-columns:repeat(6,minmax(0,1fr))}.admin-sidebar button{min-width:0;padding-left:5px;padding-right:5px;font-size:7px}}
+
+.appearance-link-content{display:flex;flex-direction:column;gap:7px;padding:11px;border:1px dashed var(--site-border);background:var(--site-background)}
+.appearance-link-content label{display:flex;flex-direction:column;gap:6px;font-size:8px;color:var(--site-muted)}
+.appearance-link-content select{width:100%;min-width:0;padding:9px;border:1px solid var(--site-border);background:#fff;color:var(--site-text);font-size:9px}
+.appearance-link-content .small-link{align-self:flex-start;color:var(--site-primary);font-size:9px}
+.appearance-link-content>small{font-size:8px;line-height:1.5;color:var(--site-muted)}
+
+/* Global owner palette: apply the saved appearance consistently across every route. */
+:root {
+  --site-panel: color-mix(in srgb, var(--site-surface) 72%, var(--site-background));
+  --site-panel-strong: color-mix(in srgb, var(--site-surface) 88%, var(--site-deep) 12%);
+  --site-on-deep: color-mix(in srgb, var(--site-background) 88%, white 12%);
+  --site-line: color-mix(in srgb, var(--site-border) 80%, var(--site-text) 20%);
+}
+body,.min-h-screen{background:var(--site-background);color:var(--site-text)}
+.page-shell,.intro-section,.about-body,.checkout-shell,.member-dashboard,.account-settings-page,.contact-page,.legal-page,.page-intro,.page-hero{background:var(--site-background);color:var(--site-text)}
+.collection-section,.about-values,.account-table-card,.notice-card,.purchase-unavailable,.purchase-card,.faq-item,.account-settings-card{background:var(--site-panel);color:var(--site-text);border-color:var(--site-border)}
+.hero-section,.membership-feature,.site-footer,.announcement-bar,.chat-locked{background:var(--site-deep)!important;color:var(--site-on-deep)}
+.hero-content h1,.page-hero h1,.page-intro h1,.checkout-main h1,.dashboard-welcome h1,.chat-heading h1,.admin-heading h1,.about-body-heading h2,.video-feature-copy h2,.video-list-heading h2{color:var(--site-text)}
+.hero-section h1,.hero-section h2,.hero-section strong,.membership-feature h2,.membership-feature h3,.site-footer h2,.site-footer strong,.chat-locked h1{color:var(--site-on-deep)}
+.hero-section p,.hero-section .hero-description,.membership-feature p,.site-footer p,.site-footer a,.chat-locked p{color:color-mix(in srgb,var(--site-on-deep) 78%,var(--site-accent))}
+.section-heading h2,.intro-copy h2,.about-body-heading h2,.video-feature-copy h2,.video-list-heading h2,.content-card-body h3,.admin-content-title h2,.admin-panel h3,.dashboard-side-card h3,.checkout-summary h3{color:var(--site-text)}
+.section-heading h2 em,.intro-copy h2 em,.about-body-heading h2 em,.video-feature-copy h2 em,.video-list-heading h2 em,.page-intro h1 em,.page-hero h1 em,.checkout-main h1 em,.dashboard-welcome h1 em,.chat-heading h1 em{color:var(--site-accent)!important}
+.eyebrow,.hero-kicker,.admin-nav-caption,.footer-heading,.section-heading .eyebrow{color:var(--site-accent)}
+.muted-copy,.section-heading p,.page-intro p,.page-hero p,.about-body-copy p,.content-card-body p,.admin-content-title p,.admin-panel p,.checkout-intro,.checkout-security p,.dashboard-side-card p,.chat-heading p{color:var(--site-muted)}
+.site-header,.site-header-inner,.mobile-nav-panel{background:var(--site-background)!important;border-color:var(--site-border)!important}
+.site-header a,.site-header button,.nav-link,.header-login{color:var(--site-text)}
+.site-header .brand-mark{color:var(--site-primary);border-color:var(--site-accent)}
+.nav-link:after,.button-dark,.chat-send{background:var(--site-primary)!important}
+.button-dark{border-color:var(--site-primary)!important;color:#fff!important}
+.button-dark:hover,.chat-send:hover{background:var(--site-accent)!important;border-color:var(--site-accent)!important}
+.button-cream,.button-cream:hover{background:var(--site-surface)!important;border-color:var(--site-surface)!important;color:var(--site-text)!important}
+.button-outline-dark{border-color:var(--site-primary)!important;color:var(--site-primary)!important}
+.button-outline-dark:hover{background:var(--site-primary)!important;color:#fff!important}
+.content-card-body,.dashboard-main-card,.dashboard-side-card,.dashboard-stat,.checkout-summary,.checkout-aside,.admin-panel,.admin-upload-form,.admin-metric,.account-settings-card,.chat-sidebar,.chat-main,.chat-mode-panel,.notice-card,.purchase-card,.faq-item,.auth-form-inner,.appearance-asset-card{background:var(--site-panel)!important;color:var(--site-text);border-color:var(--site-border)!important}
+.content-image-wrap,.appearance-asset-preview,.image-placeholder{background:var(--site-panel-strong)}
+.content-card-body h3,.dashboard-main-card h2,.dashboard-side-card h3,.checkout-summary h3,.admin-panel h3,.admin-metric strong,.chat-main-head strong,.chat-conversation-item strong{color:var(--site-text)}
+.filter-chip,.chat-mode-tabs button,.admin-sidebar button,.small-link{border-color:var(--site-border);color:var(--site-primary)}
+.filter-chip.selected,.chat-mode-tabs button.selected,.admin-sidebar button.active{background:var(--site-primary)!important;color:#fff!important;border-color:var(--site-primary)!important}
+input:not([type=color]):not([type=checkbox]):not([type=radio]),textarea,select{border-color:var(--site-border);color:var(--site-text)}
+input:not([type=color]):not([type=checkbox]):not([type=radio]):focus,textarea:focus,select:focus{outline-color:var(--site-accent);border-color:var(--site-accent)}
+.admin-table-head,.admin-table-row,.account-table-head,.account-table-row{border-color:var(--site-border)!important;color:var(--site-muted)}
+.admin-table-row strong,.account-table-row strong{color:var(--site-text)}
+.underlined-link,.open-label,.card-unlock-link,.footer-column a:hover{color:var(--site-primary);border-color:var(--site-accent)}
+.locked-mark,.status-chip,.verified-label,.live-pill{border-color:var(--site-border)}
+.about-cta,.connection-section{background:var(--site-panel);color:var(--site-text)}
+.age-gate-card{background:var(--site-background);color:var(--site-text);border-color:var(--site-border)}
+.age-gate-card p,.age-gate-card small{color:var(--site-muted)}
+@media(max-width:760px){.site-header-inner{background:var(--site-background)!important}.mobile-nav-panel{border-color:var(--site-border)!important}}
+.hero-image-panel .site-artwork-video,.membership-feature-image .site-artwork-video,.about-hero-image .site-artwork-video,.checkout-aside-visual .site-artwork-video,.auth-visual .site-artwork-video{width:100%;height:100%;object-fit:cover;display:block}
+.intro-portrait-wrap .site-artwork-video{position:relative;z-index:1;width:100%;height:540px;object-fit:cover;border-radius:150px 150px 8px 8px}
+.recent-item .site-artwork-video{width:54px;height:64px;flex:0 0 54px;object-fit:cover;border-radius:5px}
+@media(max-width:760px){.intro-portrait-wrap .site-artwork-video{height:420px}}
+
+/* Ensure the complete owner palette also reaches membership, checkout and form surfaces. */
+.video-feature-card,.plan-card,.checkout-summary,.checkout-aside,.chat-main,.chat-sidebar,.auth-form-inner,.admin-upload-form{background:var(--site-panel)!important;border-color:var(--site-border)!important;color:var(--site-text)}
+.video-feature-copy,.video-feature-image{background:var(--site-panel)}
+.plan-card h2,.plan-card .plan-price strong,.plan-card .plan-benefits li,.plan-card .faq-item>button{color:var(--site-text)}
+.plan-card .plan-description,.plan-card .plan-price span,.plan-card .plan-price-note,.plan-card .plan-secure,.plan-card .plan-benefits-label{color:var(--site-muted)}
+.plan-card .plan-divider,.membership-faq .faq-list,.membership-faq .faq-item{border-color:var(--site-border);background-color:transparent}
+.plan-card .plan-ribbon{background:var(--site-highlight)!important;color:var(--site-deep)!important}
+.plan-card.featured-plan{background:var(--site-deep)!important;border-color:var(--site-deep)!important;color:var(--site-on-deep)!important}
+.plan-card.featured-plan h2,.plan-card.featured-plan .plan-price strong,.plan-card.featured-plan .plan-benefits li{color:var(--site-on-deep)!important}
+.plan-card.featured-plan .plan-description,.plan-card.featured-plan .plan-price span,.plan-card.featured-plan .plan-price-note,.plan-card.featured-plan .plan-secure,.plan-card.featured-plan .plan-benefits-label{color:color-mix(in srgb,var(--site-on-deep) 76%,var(--site-accent))!important}
+.plan-card.featured-plan .plan-divider{background:var(--site-border)!important}
+.auth-form label,.admin-upload-form label,.auth-subtitle,.auth-privacy,.auth-legal{color:var(--site-muted)}
+.auth-form input,.admin-upload-form input,.admin-upload-form textarea,.admin-upload-form select,.appearance-color-field input[type=text],.appearance-asset-body input,.appearance-link-content select{background:var(--site-background)!important;color:var(--site-text)!important;border-color:var(--site-border)!important}
+.filter-chip{border-color:var(--site-border)!important;color:var(--site-muted)!important}
+.filter-chip:hover,.filter-chip.selected{background:var(--site-primary)!important;color:#fff!important;border-color:var(--site-primary)!important}
+.gallery-note,.membership-assurance,.membership-faq .faq-list,.membership-faq .faq-item{border-color:var(--site-border)!important;color:var(--site-muted)}
+.gallery-note a,.membership-assurance>div>svg,.billing-note svg,.plan-benefits svg{color:var(--site-accent)!important}
+.membership-assurance strong,.membership-faq .faq-item>button{color:var(--site-text)!important}
+.membership-assurance small,.membership-faq .faq-item p{color:var(--site-muted)!important}

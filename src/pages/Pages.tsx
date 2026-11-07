@@ -13,16 +13,18 @@ import { formatCurrency, formatDate } from '../lib/utils';
 import { isSupabaseConfigured, ownerName, ownerTagline, supabase } from '../lib/supabase';
 import type { ContentItem, MembershipPlan, Profile } from '../lib/types';
 import { convertImageToWebP, prepareVideoForStorage, uploadToPrivateStorage } from '../lib/media';
+import { defaultSiteTheme, fallbackSiteAssets, siteAssetSlots, useSiteAssets, useSiteTheme, type AssetSlot, type SiteTheme } from '../lib/siteSettings';
 
-const portrait = import.meta.env.VITE_OWNER_PORTRAIT_URL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1400&q=82';
-const widePortrait = import.meta.env.VITE_OWNER_HERO_IMAGE_URL || 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1800&q=82';
-const featurePortrait = import.meta.env.VITE_OWNER_FEATURE_IMAGE_URL || portrait;
 
 function SectionEyebrow({ children }: { children: ReactNode }) { return <div className="eyebrow"><span />{children}</div>; }
 function SectionHeading({ eyebrow, title, description, align = 'left' }: { eyebrow: string; title: ReactNode; description?: string; align?: 'left' | 'center' }) {
   return <div className={`section-heading ${align === 'center' ? 'center' : ''}`}><SectionEyebrow>{eyebrow}</SectionEyebrow><h2>{title}</h2>{description && <p>{description}</p>}</div>;
 }
 function LockedMark({ label = 'Members only · 18+' }: { label?: string }) { return <span className="locked-mark"><LockKeyhole size={11} /> {label}</span>; }
+function SiteArtwork({ asset, alt, className = '', loading = 'lazy' }: { asset: { media_type: 'image' | 'video'; public_url: string; alt_text?: string | null }; alt: string; className?: string; loading?: 'lazy' | 'eager' }) {
+  if (asset.media_type === 'video') return <video className={`${className} site-artwork-video`} src={asset.public_url} aria-label={alt} autoPlay muted loop playsInline preload="metadata" />;
+  return <img className={className} src={asset.public_url} alt={asset.alt_text || alt} loading={loading} decoding="async" />;
+}
 function ContentCard({ item, index = 0 }: { item: ContentItem; index?: number }) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -88,6 +90,7 @@ function ContentCard({ item, index = 0 }: { item: ContentItem; index?: number })
 
 export function HomePage() {
   const { data: content = fallbackContent } = useContent();
+  const { data: assets = fallbackSiteAssets } = useSiteAssets();
   const featured = content.slice(0, 3);
   return (
     <>
@@ -100,7 +103,7 @@ export function HomePage() {
           <div className="hero-note"><span className="hero-note-icon"><Heart size={14} /></span><span>One person. One personal collection. Every intimate image shared with consent.</span></div>
         </div>
         <div className="hero-image-panel">
-          <img src={widePortrait} alt={`Portrait of ${ownerName}`} fetchPriority="high" decoding="async" />
+          <SiteArtwork asset={assets.home_hero} alt={`Portrait of ${ownerName}`} loading="eager" />
           <div className="hero-image-shade" />
           <div className="hero-image-caption"><span>A CLOSER LOOK AT ME</span><strong>A side of me I choose to share.</strong></div>
           <div className="hero-image-index">01 <span>/</span> 04</div>
@@ -110,7 +113,7 @@ export function HomePage() {
       </section>
 
       <section className="intro-section section-pad">
-        <div className="intro-portrait-wrap"><img src={portrait} alt={`A personal portrait of ${ownerName}`} loading="lazy" decoding="async" /><div className="intro-caption"><span>A FIRST IMPRESSION</span><span>01 / 03</span></div></div>
+        <div className="intro-portrait-wrap"><SiteArtwork asset={assets.home_intro} alt={`A personal portrait of ${ownerName}`} /><div className="intro-caption"><span>A FIRST IMPRESSION</span><span>01 / 03</span></div></div>
         <div className="intro-copy"><SectionEyebrow>THE PERSON BEHIND THE COLLECTION</SectionEyebrow><h2>Confidence looks good<br />with a little <em>mystery.</em></h2><p className="intro-lead">For me, sensuality begins with confidence and the freedom to choose how I am seen. This is where I share intimate portraits, artistic nude photography, boudoir sets and more of the person behind the camera.</p><p className="muted-copy">Explore my boudoir portraits, nude art, private photo sets, erotic films and one-to-one conversations with me. Every collection is personal, deliberately shared and intended for adults who respect consent, privacy and boundaries.</p><Link to="/about" className="underlined-link">Read my story <ArrowUpRight size={15} /></Link><div className="signature">With affection, <span>— {ownerName}</span></div></div>
       </section>
 
@@ -120,7 +123,7 @@ export function HomePage() {
       </section>
 
       <section className="membership-feature">
-        <div className="membership-feature-image"><img src={featurePortrait} alt={`A personal portrait of ${ownerName}`} loading="lazy" decoding="async" /></div>
+        <div className="membership-feature-image"><SiteArtwork asset={assets.home_membership} alt={`A personal portrait of ${ownerName}`} /></div>
         <div className="membership-feature-copy"><SectionEyebrow>AFTER DARK MEMBERSHIP</SectionEyebrow><h2>See more of me<br /><em>after dark.</em></h2><p>Step inside my collection of sensual portraits, nude photography and erotic films. Selected memberships also include private photo exchanges, voice notes and a personal line to me.</p><Link to="/membership" className="button button-dark">Choose your access <ArrowUpRight size={15} /></Link><span className="feature-footnote"><ShieldCheck size={14} /> Adults 18+. Private membership. Personal access.</span></div>
       </section>
 
@@ -130,7 +133,8 @@ export function HomePage() {
 }
 
 export function AboutPage() {
-  return <div className="page-shell"><section className="page-hero about-hero"><div><SectionEyebrow>A CLOSER LOOK AT ME</SectionEyebrow><h1>The person behind<br /><em>the imagery.</em></h1><p>I choose what I reveal, how I reveal it and who gets to come closer. This is my personal space for sensual portraits, artistic nudity, intimate films and conversation that stays between us.</p></div><div className="about-hero-image"><img src={portrait} alt={`Personal portrait of ${ownerName}`} loading="lazy" decoding="async" /></div></section><section className="about-body section-pad"><div className="about-body-heading"><span>01 — MY WORLD</span><h2>Sensuality lives in<br /><em>the details.</em></h2></div><div className="about-body-copy"><p className="large-paragraph">I love the confidence of a beautiful portrait, the quiet power of a bare silhouette and the thrill of revealing a little more on my own terms. Every image reflects my taste, my boundaries and my way of embracing sensuality.</p><p>I created this private edition for adults who appreciate sensual photography, artistic nudity, boudoir and erotic film. The public gallery offers a tasteful introduction; my more intimate photographs and videos are reserved for members.</p><p>This is not a marketplace or a social network. It is my personal collection, told in my own voice, with a private line for members who want to speak with me directly.</p><div className="signature">With affection, <span>— {ownerName}</span></div></div></section><section className="about-values"><div><span>01</span><h3>Intentional</h3><p>Every photograph is selected and shared on my terms.</p></div><div><span>02</span><h3>Unfiltered</h3><p>One person, one point of view, one personal collection.</p></div><div><span>03</span><h3>Private</h3><p>Your privacy, my boundaries and clear consent come first.</p></div></section><section className="about-cta"><p>You have seen the introduction. The more intimate chapters are reserved for members.</p><Link to="/membership" className="button button-cream">Explore membership <ArrowUpRight size={15} /></Link></section></div>;
+  const { data: assets = fallbackSiteAssets } = useSiteAssets();
+  return <div className="page-shell"><section className="page-hero about-hero"><div><SectionEyebrow>A CLOSER LOOK AT ME</SectionEyebrow><h1>The person behind<br /><em>the imagery.</em></h1><p>I choose what I reveal, how I reveal it and who gets to come closer. This is my personal space for sensual portraits, artistic nudity, intimate films and conversation that stays between us.</p></div><div className="about-hero-image"><SiteArtwork asset={assets.about_hero} alt={`Personal portrait of ${ownerName}`} /></div></section><section className="about-body section-pad"><div className="about-body-heading"><span>01 — MY WORLD</span><h2>Sensuality lives in<br /><em>the details.</em></h2></div><div className="about-body-copy"><p className="large-paragraph">I love the confidence of a beautiful portrait, the quiet power of a bare silhouette and the thrill of revealing a little more on my own terms. Every image reflects my taste, my boundaries and my way of embracing sensuality.</p><p>I created this private edition for adults who appreciate sensual photography, artistic nudity, boudoir and erotic film. The public gallery offers a tasteful introduction; my more intimate photographs and videos are reserved for members.</p><p>This is not a marketplace or a social network. It is my personal collection, told in my own voice, with a private line for members who want to speak with me directly.</p><div className="signature">With affection, <span>— {ownerName}</span></div></div></section><section className="about-values"><div><span>01</span><h3>Intentional</h3><p>Every photograph is selected and shared on my terms.</p></div><div><span>02</span><h3>Unfiltered</h3><p>One person, one point of view, one personal collection.</p></div><div><span>03</span><h3>Private</h3><p>Your privacy, my boundaries and clear consent come first.</p></div></section><section className="about-cta"><p>You have seen the introduction. The more intimate chapters are reserved for members.</p><Link to="/membership" className="button button-cream">Explore membership <ArrowUpRight size={15} /></Link></section></div>;
 }
 
 export function GalleryPage() {
@@ -143,7 +147,11 @@ export function GalleryPage() {
 
 export function VideosPage() {
   const { data = fallbackContent } = useContent('video');
-  return <div className="page-shell"><section className="page-intro film-intro"><SectionEyebrow>EROTIC FILMS · PRIVATE RELEASES · 18+</SectionEyebrow><h1>My private films, <em>after dark.</em></h1><p>A personal selection of intimate films, sensual scenes and private videos. Public cover images offer a preview; full-length originals are reserved for eligible members or individual purchase.</p></section><div className="video-feature-card"><div className="video-feature-image"><img src={data[0]?.preview_url || 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=1200'} alt="Video collection preview"/><div className="video-feature-overlay"><span className="play-button large"><Play size={19} fill="currentColor" /></span><span>A GLIMPSE · NOT THE FULL FILM</span></div></div><div className="video-feature-copy"><SectionEyebrow>FEATURED PRIVATE RELEASE</SectionEyebrow><h2>The scenes I keep<br /><em>for later.</em></h2><p>My film collection brings together intimate visual stories and personal clips. Full-length releases are available only to members with the right access.</p><Link to="/membership" className="button button-dark">Unlock the private films <ArrowUpRight size={15}/></Link></div></div><div className="video-list-heading"><div><SectionEyebrow>MY FILM COLLECTION</SectionEyebrow><h2>Available <em>private films.</em></h2></div><span>{data.length.toString().padStart(2, '0')} PRIVATE FILMS</span></div><div className="content-grid video-grid">{data.map((item, i) => <ContentCard key={item.id} item={item} index={i} />)}</div></div>;
+  const { data: assets = fallbackSiteAssets } = useSiteAssets();
+  const feature = assets.videos_feature;
+  const featureIsConfigured = Boolean(feature.storage_path || feature.source_content_id);
+  const fallbackPreview = data[0]?.preview_url || feature.public_url;
+  return <div className="page-shell"><section className="page-intro film-intro"><SectionEyebrow>EROTIC FILMS · PRIVATE RELEASES · 18+</SectionEyebrow><h1>My private films, <em>after dark.</em></h1><p>A personal selection of intimate films, sensual scenes and private videos. Public cover images offer a preview; full-length originals are reserved for eligible members or individual purchase.</p></section><div className="video-feature-card"><div className="video-feature-image">{featureIsConfigured ? <SiteArtwork asset={feature} alt={feature.alt_text || 'Featured video collection media'} loading="eager" /> : <img src={fallbackPreview} alt="Video collection preview" loading="lazy" decoding="async" />}{!featureIsConfigured && data.length > 0 && <span className="video-feature-source-note">Featured from my latest release</span>}<div className="video-feature-overlay"><span className="play-button large"><Play size={19} fill="currentColor" /></span><span>A GLIMPSE · NOT THE FULL FILM</span></div></div><div className="video-feature-copy"><SectionEyebrow>FEATURED PRIVATE RELEASE</SectionEyebrow><h2>The scenes I keep<br /><em>for later.</em></h2><p>My film collection brings together intimate visual stories and personal clips. Full-length releases are available only to members with the right access.</p><Link to="/membership" className="button button-dark">Unlock the private films <ArrowUpRight size={15}/></Link></div></div><div className="video-list-heading"><div><SectionEyebrow>MY FILM COLLECTION</SectionEyebrow><h2>Available <em>private films.</em></h2></div><span>{data.length.toString().padStart(2, '0')} PRIVATE FILMS</span></div><div className="content-grid video-grid">{data.map((item, i) => <ContentCard key={item.id} item={item} index={i} />)}</div></div>;
 }
 
 export function MembershipPage() {
@@ -169,6 +177,7 @@ function Faq({ q, a }: { q: string; a: string }) { const [open, setOpen] = useSt
 
 export function CheckoutPage() {
   const { planId } = useParams({ from: '/checkout/$planId' });
+  const { data: assets = fallbackSiteAssets } = useSiteAssets();
   const { data: plans = fallbackPlans } = usePlans();
   const plan = plans.find((p) => p.slug === planId || p.id === planId);
   const { user, configured } = useAuth();
@@ -194,11 +203,12 @@ export function CheckoutPage() {
       {invoice ? <div className="invoice-created"><CheckCircle2/><div><strong>Invoice created</strong><span>Continue to the BTCPay Server checkout to complete payment.</span></div><a href={invoice.checkoutLink} target="_blank" rel="noreferrer" className="button button-dark">Open Bitcoin checkout <ArrowUpRight size={14}/></a></div> : <button className="button button-dark checkout-submit" disabled={pending} onClick={createInvoice}>{pending ? 'Creating secure invoice…' : 'Create Bitcoin invoice'} <ArrowUpRight size={15}/></button>}
       {error && <div className="inline-error"><CircleHelp size={16}/><span>{error}</span></div>}
       {!user && <p className="checkout-signin-note">You will be asked to sign in or create an account before a payment invoice is generated.</p>}
-      </div><aside className="checkout-aside"><div className="checkout-aside-visual"><img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=85" alt={`Portrait from ${ownerName}'s private collection`}/><div><span>AFTER DARK MEMBERSHIP</span><h3>A little closer,<br/><em>by choice.</em></h3></div></div><div className="checkout-security"><ShieldCheck/><div><strong>Private and protected</strong><p>Your payment is verified server-side. Protected media links are issued only after server-side access checks.</p></div></div><div className="checkout-security"><Clock3/><div><strong>Prepaid access</strong><p>Your membership starts when the invoice is settled and ends after {plan.duration_days} days.</p></div></div><div className="checkout-terms">By continuing, you agree to the <Link to="/terms">Terms</Link> and <Link to="/refunds">Refund Policy</Link>.</div></aside></div></div>;
+      </div><aside className="checkout-aside"><div className="checkout-aside-visual"><SiteArtwork asset={assets.checkout_feature} alt={`Portrait from ${ownerName}'s private collection`}/><div><span>AFTER DARK MEMBERSHIP</span><h3>A little closer,<br/><em>by choice.</em></h3></div></div><div className="checkout-security"><ShieldCheck/><div><strong>Private and protected</strong><p>Your payment is verified server-side. Protected media links are issued only after server-side access checks.</p></div></div><div className="checkout-security"><Clock3/><div><strong>Prepaid access</strong><p>Your membership starts when the invoice is settled and ends after {plan.duration_days} days.</p></div></div><div className="checkout-terms">By continuing, you agree to the <Link to="/terms">Terms</Link> and <Link to="/refunds">Refund Policy</Link>.</div></aside></div></div>;
 }
 
 export function ContentCheckoutPage() {
   const { contentId } = useParams({ from: '/content-checkout/$contentId' });
+  const { data: assets = fallbackSiteAssets } = useSiteAssets();
   const { data: items = [] } = useContent();
   const item = items.find((x) => x.id === contentId);
   const { user, configured } = useAuth();
@@ -221,10 +231,11 @@ export function ContentCheckoutPage() {
       {checkoutLink ? <div className="invoice-created"><CheckCircle2/><div><strong>Invoice created</strong><span>Continue to BTCPay Server to complete the payment.</span></div><a href={checkoutLink} target="_blank" rel="noreferrer" className="button button-dark">Open Bitcoin checkout <ArrowUpRight size={14}/></a></div> : <button className="button button-dark checkout-submit" onClick={createInvoice} disabled={pending}>{pending ? 'Creating secure invoice…' : 'Create Bitcoin invoice'} <ArrowUpRight size={15}/></button>}
       {error && <div className="inline-error"><CircleHelp size={16}/>{error}</div>}
       {!user && <p className="checkout-signin-note">Sign in or register before an invoice is created.</p>}
-      </div><aside className="checkout-aside"><div className="checkout-aside-visual"><img src={item.preview_url || portrait} alt={item.title}/><div><span>AFTER DARK MEMBERSHIP</span><h3>A moment,<br/><em>just for you.</em></h3></div></div><div className="checkout-security"><ShieldCheck/><div><strong>Protected access</strong><p>The original media is delivered through a short-lived signed link after your purchase is verified.</p></div></div><div className="checkout-security"><Bitcoin/><div><strong>Verified payment</strong><p>Payment screenshots and browser redirects never unlock content. The payment provider confirms settlement.</p></div></div></aside></div></div>;
+      </div><aside className="checkout-aside"><div className="checkout-aside-visual">{item.preview_url ? <img src={item.preview_url} alt={item.title} loading="lazy" decoding="async"/> : <SiteArtwork asset={assets.checkout_feature} alt="Membership collection preview"/>}<div><span>AFTER DARK MEMBERSHIP</span><h3>A moment,<br/><em>just for you.</em></h3></div></div><div className="checkout-security"><ShieldCheck/><div><strong>Protected access</strong><p>The original media is delivered through a short-lived signed link after your purchase is verified.</p></div></div><div className="checkout-security"><Bitcoin/><div><strong>Verified payment</strong><p>Payment screenshots and browser redirects never unlock content. The payment provider confirms settlement.</p></div></div></aside></div></div>;
 }
 
 export function LoginPage() {
+  const { data: assets = fallbackSiteAssets } = useSiteAssets();
   const { user, configured } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'register' | 'reset'>(() => window.location.hash.includes('type=recovery') || new URLSearchParams(window.location.search).get('type') === 'recovery' ? 'reset' : 'login');
@@ -264,12 +275,13 @@ export function LoginPage() {
     }
     setLoading(false);
   };
-  return <div className="auth-page"><div className="auth-visual"><img src={portrait} alt="Personal portrait"/><div className="auth-visual-shade"/><div className="auth-visual-copy"><span>AFTER DARK MEMBERSHIP</span><h2>The most personal moments<br />are shared <em>by choice.</em></h2><p>My sensual world, shared on my terms.</p></div><div className="auth-visual-bottom">ADULTS ONLY <span>✦</span> PRIVATE ONE-TO-ONE</div></div><div className="auth-form-panel"><div className="auth-form-inner"><Link to="/" className="auth-back"><ArrowLeft size={14}/> Return to the website</Link><div className="auth-monogram">a.</div><SectionEyebrow>A PRIVATE LINE TO ME</SectionEyebrow><h1>{mode === 'login' ? 'Welcome back.' : mode === 'register' ? 'A place for you.' : 'A fresh start.'}</h1><p className="auth-subtitle">{mode === 'login' ? 'Sign in to continue to your personal space.' : mode === 'register' ? 'Create your account to explore my private photographs, adult films and one-to-one conversations.' : 'Choose a new password for your account.'}</p>{mode !== 'reset' && <div className="auth-tabs"><button onClick={() => { setMode('login'); setError(''); setMessage(''); }} className={mode === 'login' ? 'active' : ''}>Sign in</button><button onClick={() => { setMode('register'); setError(''); setMessage(''); }} className={mode === 'register' ? 'active' : ''}>Create account</button></div>}<form onSubmit={submit} className="auth-form">{mode === 'register' && <><label>Full name<input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" required autoComplete="name"/></label><label>Username<input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose your private username" required autoComplete="username"/></label><label className="adult-consent-check signup-age-check"><input type="checkbox" checked={adultConfirmed} onChange={(e) => setAdultConfirmed(e.target.checked)}/><span>I confirm that I am at least 18 years old and legally allowed to access adult-oriented content where I live.</span></label></>}{mode !== 'reset' && <label>Email address<div className="field-with-icon"><Mail size={16}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required autoComplete="email"/></div></label>}<label>Password<div className="field-with-icon password-field"><input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" required autoComplete={mode === 'login' ? 'current-password' : 'new-password'}/><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label="Toggle password visibility">{showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}</button></div></label>{mode === 'reset' && <label>Confirm new password<input type={showPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat your new password" required autoComplete="new-password"/></label>}{mode === 'login' && <div className="auth-forgot"><button type="button" onClick={async () => { if (!supabase || !email) { setError('Enter your email address first.'); return; } const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/login` }); setError(resetError?.message || 'Password reset instructions have been sent if the account exists.'); }}>Forgot password?</button></div>}<button className="button button-dark auth-submit" disabled={loading}>{loading ? 'Please wait…' : mode === 'login' ? 'Sign in to your account' : mode === 'register' ? 'Create my account' : 'Update password'} <ArrowUpRight size={15}/></button></form>{error && <div className="inline-error">{error}</div>}{message && <div className="inline-success"><CheckCircle2 size={16}/>{message}</div>}<div className="auth-privacy"><ShieldCheck size={14}/> Your account and conversations are private.</div><p className="auth-legal">By continuing, you agree to our <Link to="/terms">Terms</Link> and <Link to="/privacy">Privacy Policy</Link>.</p></div></div></div>;
+  return <div className="auth-page"><div className="auth-visual"><SiteArtwork asset={assets.auth_hero} alt="Personal portrait"/><div className="auth-visual-shade"/><div className="auth-visual-copy"><span>AFTER DARK MEMBERSHIP</span><h2>The most personal moments<br />are shared <em>by choice.</em></h2><p>My sensual world, shared on my terms.</p></div><div className="auth-visual-bottom">ADULTS ONLY <span>✦</span> PRIVATE ONE-TO-ONE</div></div><div className="auth-form-panel"><div className="auth-form-inner"><Link to="/" className="auth-back"><ArrowLeft size={14}/> Return to the website</Link><div className="auth-monogram">a.</div><SectionEyebrow>A PRIVATE LINE TO ME</SectionEyebrow><h1>{mode === 'login' ? 'Welcome back.' : mode === 'register' ? 'A place for you.' : 'A fresh start.'}</h1><p className="auth-subtitle">{mode === 'login' ? 'Sign in to continue to your personal space.' : mode === 'register' ? 'Create your account to explore my private photographs, adult films and one-to-one conversations.' : 'Choose a new password for your account.'}</p>{mode !== 'reset' && <div className="auth-tabs"><button onClick={() => { setMode('login'); setError(''); setMessage(''); }} className={mode === 'login' ? 'active' : ''}>Sign in</button><button onClick={() => { setMode('register'); setError(''); setMessage(''); }} className={mode === 'register' ? 'active' : ''}>Create account</button></div>}<form onSubmit={submit} className="auth-form">{mode === 'register' && <><label>Full name<input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" required autoComplete="name"/></label><label>Username<input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose your private username" required autoComplete="username"/></label><label className="adult-consent-check signup-age-check"><input type="checkbox" checked={adultConfirmed} onChange={(e) => setAdultConfirmed(e.target.checked)}/><span>I confirm that I am at least 18 years old and legally allowed to access adult-oriented content where I live.</span></label></>}{mode !== 'reset' && <label>Email address<div className="field-with-icon"><Mail size={16}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required autoComplete="email"/></div></label>}<label>Password<div className="field-with-icon password-field"><input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" required autoComplete={mode === 'login' ? 'current-password' : 'new-password'}/><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label="Toggle password visibility">{showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}</button></div></label>{mode === 'reset' && <label>Confirm new password<input type={showPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat your new password" required autoComplete="new-password"/></label>}{mode === 'login' && <div className="auth-forgot"><button type="button" onClick={async () => { if (!supabase || !email) { setError('Enter your email address first.'); return; } const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/login` }); setError(resetError?.message || 'Password reset instructions have been sent if the account exists.'); }}>Forgot password?</button></div>}<button className="button button-dark auth-submit" disabled={loading}>{loading ? 'Please wait…' : mode === 'login' ? 'Sign in to your account' : mode === 'register' ? 'Create my account' : 'Update password'} <ArrowUpRight size={15}/></button></form>{error && <div className="inline-error">{error}</div>}{message && <div className="inline-success"><CheckCircle2 size={16}/>{message}</div>}<div className="auth-privacy"><ShieldCheck size={14}/> Your account and conversations are private.</div><p className="auth-legal">By continuing, you agree to our <Link to="/terms">Terms</Link> and <Link to="/privacy">Privacy Policy</Link>.</p></div></div></div>;
 }
 
 export function DashboardPage() {
   const { user, profile, isOwner } = useAuth();
   const { data: content = fallbackContent } = useContent();
+  const { data: assets = fallbackSiteAssets } = useSiteAssets();
   const [membership, setMembership] = useState<{ status: string; ends_at: string; plan_name: string } | null>(null);
   useEffect(() => {
     const client = supabase;
@@ -285,13 +297,12 @@ export function DashboardPage() {
       .maybeSingle()
       .then(({ data }) => {
         if (!data) return;
-        // Supabase may infer a joined relationship as an array; use its first row.
-        const planName = data.membership_plans?.[0]?.name || 'Membership';
-        setMembership({ status: data.status, ends_at: data.ends_at, plan_name: planName });
+        const planName = (data.membership_plans as Array<{ name: string }> | null)?.[0]?.name || 'Membership';
+        setMembership({ status: data.status, ends_at: data.ends_at, plan_name: planName || 'Membership' });
       });
   }, [user]);
   if (!user) return <AuthGate title="Your private space awaits." copy="Sign in to view your membership, saved collections and private messages."/>;
-  return <div className="member-dashboard page-shell">{profile?.status === 'suspended' && <div className="inline-error account-suspension-notice"><ShieldCheck size={16}/> Your account access has been paused by the owner. Private media, messaging and purchases are unavailable while this restriction is in place.</div>}<div className="dashboard-welcome"><div><SectionEyebrow>A PRIVATE LINE TO ME</SectionEyebrow><h1>Good to see you,<br/><em>{profile?.full_name?.split(' ')[0] || 'friend'}.</em></h1><p>Your membership, private messages and saved moments are gathered here.</p></div><div className="dashboard-date">MEMBER SINCE <strong>{formatDate(user.created_at)}</strong></div></div><div className="dashboard-stat-grid"><div className="dashboard-stat membership-status-stat"><span>MEMBERSHIP STATUS</span><strong>{profile?.status === 'suspended' ? 'Restricted' : membership ? 'Active' : 'Not active'}</strong><small>{profile?.status === 'suspended' ? 'Member access has been restricted by the owner.' : membership ? `${membership.plan_name} · Until ${formatDate(membership.ends_at)}` : 'Choose a membership to unlock the private edition.'}</small><span className="stat-icon"><BadgeCheck/></span></div><div className="dashboard-stat"><span>YOUR COLLECTION</span><strong>{content.length.toString().padStart(2, '0')}</strong><small>Stories and moments in the library</small><span className="stat-icon"><ImageIcon/></span></div><div className="dashboard-stat"><span>PRIVATE CONNECTION</span><strong>01 : 01</strong><small>One private conversation, just between us.</small><span className="stat-icon"><MessageCircle/></span></div></div><div className="dashboard-content-grid"><div className="dashboard-main-card"><div className="dashboard-card-heading"><div><SectionEyebrow>RECENTLY ADDED</SectionEyebrow><h2>From the <em>collection.</em></h2></div><Link to="/gallery" className="small-link">View all <ArrowUpRight size={13}/></Link></div><div className="dashboard-recent-list">{content.slice(0, 3).map((item) => <div className="recent-item" key={item.id}><img src={item.preview_url || portrait} alt=""/><div><strong>{item.title}</strong><small>{item.category}</small></div><LockedMark label={item.access_level === 'public' ? 'Open' : 'Members'}/></div>)}</div></div><div className="dashboard-side-card"><div className="dashboard-side-icon"><Crown/></div><SectionEyebrow>MEMBERSHIP</SectionEyebrow><h3>{membership ? 'Your access is open.' : 'Come a little closer.'}</h3><p>{membership ? 'Your private collection and member features are ready.' : 'Unlock the private picture and video collections, and choose whether one-to-one chat is part of your experience.'}</p><Link to="/membership" className="button button-dark">{membership ? 'View membership' : 'Explore plans'} <ArrowUpRight size={14}/></Link></div></div><div className="dashboard-quick-links"><Link to="/gallery"><ImageIcon/> My gallery <ArrowUpRight/></Link><Link to="/videos"><Video/> Private videos <ArrowUpRight/></Link><Link to="/chat"><MessageCircle/> Private chat <ArrowUpRight/></Link><Link to="/membership"><Crown/> Membership <ArrowUpRight/></Link></div>{isOwner && <div className="owner-redirect"><BadgeCheck/> You are signed in as the owner. <Link to="/admin">Open Owner Studio <ArrowUpRight size={13}/></Link></div>}</div>;
+  return <div className="member-dashboard page-shell">{profile?.status === 'suspended' && <div className="inline-error account-suspension-notice"><ShieldCheck size={16}/> Your account access has been paused by the owner. Private media, messaging and purchases are unavailable while this restriction is in place.</div>}<div className="dashboard-welcome"><div><SectionEyebrow>A PRIVATE LINE TO ME</SectionEyebrow><h1>Good to see you,<br/><em>{profile?.full_name?.split(' ')[0] || 'friend'}.</em></h1><p>Your membership, private messages and saved moments are gathered here.</p></div><div className="dashboard-date">MEMBER SINCE <strong>{formatDate(user.created_at)}</strong></div></div><div className="dashboard-stat-grid"><div className="dashboard-stat membership-status-stat"><span>MEMBERSHIP STATUS</span><strong>{profile?.status === 'suspended' ? 'Restricted' : membership ? 'Active' : 'Not active'}</strong><small>{profile?.status === 'suspended' ? 'Member access has been restricted by the owner.' : membership ? `${membership.plan_name} · Until ${formatDate(membership.ends_at)}` : 'Choose a membership to unlock the private edition.'}</small><span className="stat-icon"><BadgeCheck/></span></div><div className="dashboard-stat"><span>YOUR COLLECTION</span><strong>{content.length.toString().padStart(2, '0')}</strong><small>Stories and moments in the library</small><span className="stat-icon"><ImageIcon/></span></div><div className="dashboard-stat"><span>PRIVATE CONNECTION</span><strong>01 : 01</strong><small>One private conversation, just between us.</small><span className="stat-icon"><MessageCircle/></span></div></div><div className="dashboard-content-grid"><div className="dashboard-main-card"><div className="dashboard-card-heading"><div><SectionEyebrow>RECENTLY ADDED</SectionEyebrow><h2>From the <em>collection.</em></h2></div><Link to="/gallery" className="small-link">View all <ArrowUpRight size={13}/></Link></div><div className="dashboard-recent-list">{content.slice(0, 3).map((item) => <div className="recent-item" key={item.id}>{item.preview_url ? <img src={item.preview_url} alt=""/> : <SiteArtwork asset={assets.home_intro} alt=""/>}<div><strong>{item.title}</strong><small>{item.category}</small></div><LockedMark label={item.access_level === 'public' ? 'Open' : 'Members'}/></div>)}</div></div><div className="dashboard-side-card"><div className="dashboard-side-icon"><Crown/></div><SectionEyebrow>MEMBERSHIP</SectionEyebrow><h3>{membership ? 'Your access is open.' : 'Come a little closer.'}</h3><p>{membership ? 'Your private collection and member features are ready.' : 'Unlock the private picture and video collections, and choose whether one-to-one chat is part of your experience.'}</p><Link to="/membership" className="button button-dark">{membership ? 'View membership' : 'Explore plans'} <ArrowUpRight size={14}/></Link></div></div><div className="dashboard-quick-links"><Link to="/gallery"><ImageIcon/> My gallery <ArrowUpRight/></Link><Link to="/videos"><Video/> Private videos <ArrowUpRight/></Link><Link to="/chat"><MessageCircle/> Private chat <ArrowUpRight/></Link><Link to="/membership"><Crown/> Membership <ArrowUpRight/></Link></div>{isOwner && <div className="owner-redirect"><BadgeCheck/> You are signed in as the owner. <Link to="/admin">Open Owner Studio <ArrowUpRight size={13}/></Link></div>}</div>;
 }
 
 function AuthGate({ title, copy }: { title: string; copy: string }) { return <div className="auth-gate"><div className="auth-gate-mark"><LockKeyhole/></div><SectionEyebrow>MEMBERS AREA</SectionEyebrow><h1>{title}</h1><p>{copy}</p><Link to="/login" className="button button-dark">Sign in or register <ArrowUpRight size={15}/></Link></div>; }
@@ -339,14 +350,15 @@ export function ChatPage() {
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ['conversations', user?.id, isOwner], enabled: Boolean(user && supabase),
     queryFn: async () => {
-      if (!supabase || !user) return [];
-      const q = supabase.from('conversations').select('id,member_id,updated_at,profiles:profiles!conversations_member_id_fkey(full_name,username,avatar_url)').order('updated_at', { ascending: false });
+      const client = supabase;
+      if (!client || !user) return [];
+      const q = client.from('conversations').select('id,member_id,updated_at,profiles:profiles!conversations_member_id_fkey(full_name,username,avatar_url)').order('updated_at', { ascending: false });
       const { data, error } = isOwner ? await q : await q.eq('member_id', user.id);
       if (error) throw error;
       return data || [];
     },
   });
-  useEffect(() => { if (!supabase || !user || isOwner) return; supabase.rpc('can_use_chat').then(({ data }) => setAccess(Boolean(data))); }, [user, isOwner]);
+  useEffect(() => { const client = supabase; if (!client || !user || isOwner) return; client.rpc('can_use_chat').then(({ data }) => setAccess(Boolean(data))); }, [user, isOwner]);
   useEffect(() => { if (!activeConversation && conversations.length) setActiveConversation(conversations[0].id); }, [conversations, activeConversation]);
   const { data: messages = [] } = useQuery({
     queryKey: ['messages', activeConversation], enabled: Boolean(activeConversation && supabase),
@@ -357,34 +369,24 @@ export function ChatPage() {
       return data || [];
     },
   });
-  useEffect(() => { if (!supabase || !activeConversation || !user || !messages.length) return; const unread = messages.filter((m: any) => m.sender_id !== user.id && !m.read_at).map((m: any) => m.id); if (unread.length) supabase.from('messages').update({ read_at: new Date().toISOString() }).in('id', unread); }, [activeConversation, messages, user]);
-  useEffect(() => {
-    const client = supabase;
-    if (!client || !activeConversation) return;
-    const channel = client.channel(`conversation:${activeConversation}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${activeConversation}`,
-      }, () => queryClient.invalidateQueries({ queryKey: ['messages', activeConversation] }))
-      .subscribe();
-    return () => { void client.removeChannel(channel); };
-  }, [activeConversation, queryClient]);
+  useEffect(() => { const client = supabase; if (!client || !activeConversation || !user || !messages.length) return; const unread = messages.filter((m: any) => m.sender_id !== user.id && !m.read_at).map((m: any) => m.id); if (unread.length) void client.from('messages').update({ read_at: new Date().toISOString() }).in('id', unread); }, [activeConversation, messages, user]);
+  useEffect(() => { const client = supabase; if (!client || !activeConversation) return; const channel = client.channel(`conversation:${activeConversation}`).on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `conversation_id=eq.${activeConversation}` }, () => queryClient.invalidateQueries({ queryKey: ['messages', activeConversation] })).subscribe(); return () => { void client.removeChannel(channel); }; }, [activeConversation, queryClient]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length]);
   useEffect(() => () => { if (recorderRef.current?.state === 'recording') recorderRef.current.stop(); }, []);
 
   const createConversation = async () => {
-    if (!supabase || !user) return;
-    const { data: ownerId, error: ownerError } = await supabase.rpc('get_owner_user_id');
+    const client = supabase;
+    if (!client || !user) return;
+    const { data: ownerId, error: ownerError } = await client.rpc('get_owner_user_id');
     if (ownerError || !ownerId) { setChatNotice('The owner account is not configured yet.'); return; }
-    const { data, error } = await supabase.from('conversations').insert({ member_id: user.id, owner_id: ownerId }).select('id').single();
+    const { data, error } = await client.from('conversations').insert({ member_id: user.id, owner_id: ownerId }).select('id').single();
     if (!error && data) { setActiveConversation(data.id); queryClient.invalidateQueries({ queryKey: ['conversations'] }); }
     else if (error) setChatNotice(error.message);
   };
   const insertMessage = async (payload: Record<string, unknown>) => {
-    if (!supabase || !user || !activeConversation) return false;
-    const { error } = await supabase.from('messages').insert({ conversation_id: activeConversation, sender_id: user.id, ...payload });
+    const client = supabase;
+    if (!client || !user || !activeConversation) return false;
+    const { error } = await client.from('messages').insert({ conversation_id: activeConversation, sender_id: user.id, ...payload });
     if (error) { setChatNotice(error.message); return false; }
     setChatNotice('');
     await queryClient.invalidateQueries({ queryKey: ['messages', activeConversation] });
@@ -400,7 +402,8 @@ export function ChatPage() {
     setIsSending(false);
   };
   const uploadAttachment = async (file: File, kind: 'image' | 'voice') => {
-    if (!supabase || !user || !activeConversation) return;
+    const client = supabase;
+    if (!client || !user || !activeConversation) return;
     const maxBytes = kind === 'image' ? 15 * 1024 * 1024 : 20 * 1024 * 1024;
     if (file.size > maxBytes) { setChatNotice(`Keep ${kind === 'image' ? 'photographs under 15 MB' : 'voice notes under 20 MB'}.`); return; }
     if (kind === 'image' && !file.type.startsWith('image/')) { setChatNotice('Choose a JPEG, PNG, WebP or AVIF photograph.'); return; }
@@ -415,7 +418,7 @@ export function ChatPage() {
       const cleanExtension = storedFile.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || (kind === 'image' ? 'webp' : 'webm');
       const path = `${activeConversation}/${user.id}/${crypto.randomUUID()}.${cleanExtension}`;
       const safeMimeType = storedFile.type.split(';')[0] || (kind === 'voice' ? 'audio/webm' : 'image/webp');
-      await uploadToPrivateStorage(supabase, 'private-messages', path, storedFile);
+      await uploadToPrivateStorage(client, 'private-messages', path, storedFile);
       const ok = await insertMessage({
         body: kind === 'image' ? (message.trim() || 'A private photograph') : 'A private voice note',
         message_type: kind,
@@ -424,7 +427,7 @@ export function ChatPage() {
         attachment_mime_type: safeMimeType,
         duration_seconds: null,
       });
-      if (!ok) await supabase.storage.from('private-messages').remove([path]);
+      if (!ok) await client.storage.from('private-messages').remove([path]);
       else setMessage('');
       setChatNotice(ok ? 'Your private message has been sent.' : 'Your attachment could not be added to the conversation.');
     } catch (error) {
@@ -506,7 +509,7 @@ export function ChatPage() {
 export function AdminPage() {
   const { user, isOwner } = useAuth();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<'overview' | 'content' | 'members' | 'plans' | 'payments'>('overview');
+  const [tab, setTab] = useState<'overview' | 'content' | 'appearance' | 'members' | 'plans' | 'payments'>('overview');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'image' | 'video'>('image');
@@ -520,7 +523,7 @@ export function AdminPage() {
   const [previewConsent, setPreviewConsent] = useState(false);
   const mediaInputRef = useRef<HTMLInputElement>(null);
   const previewInputRef = useRef<HTMLInputElement>(null);
-  const { data: content = [] } = useQuery({ queryKey: ['owner-content'], enabled: Boolean(isOwner && supabase), queryFn: async () => { const { data, error } = await supabase!.from('content_items').select('id,title,content_type,access_level,is_published,created_at,storage_path,preview_storage_path').order('created_at', { ascending: false }); if (error) throw error; return data || []; } });
+  const { data: content = [] } = useQuery({ queryKey: ['owner-content'], enabled: Boolean(isOwner && supabase), queryFn: async () => { const { data, error } = await supabase!.from('content_items').select('id,title,content_type,access_level,is_published,created_at,storage_path,preview_storage_path,sort_order').order('sort_order', { ascending: true }).order('created_at', { ascending: false }); if (error) throw error; return data || []; } });
   const { data: members = [] } = useQuery({ queryKey: ['owner-members'], enabled: Boolean(isOwner && supabase), queryFn: async () => { const { data, error } = await supabase!.from('profiles').select('id,full_name,username,created_at,role,status').eq('role', 'member').order('created_at', { ascending: false }).limit(100); if (error) throw error; return data || []; } });
   const { data: paymentOrders = [] } = useQuery({ queryKey: ['owner-payment-orders'], enabled: Boolean(isOwner && supabase), queryFn: async () => { const { data, error } = await supabase!.from('payment_orders').select('id,user_id,product_type,amount,currency,status,provider_invoice_id,transaction_id,created_at,confirmed_at').order('created_at', { ascending: false }).limit(100); if (error) throw error; return data || []; } });
   const upload = async (e: FormEvent) => {
@@ -567,6 +570,7 @@ export function AdminPage() {
         storage_path: mediaPath,
         preview_url: safePreviewUrl,
         preview_storage_path: previewPath,
+        sort_order: Math.min(0, ...content.map((item: any) => Number(item.sort_order ?? 0))) - 10,
         is_published: false,
         currency: 'USD',
         created_by: user.id,
@@ -590,13 +594,227 @@ export function AdminPage() {
   };
   if (!user) return <AuthGate title="My private studio." copy="Sign in with the owner account to manage your private portfolio."/>;
   if (!isOwner) return <div className="auth-gate"><div className="auth-gate-mark"><ShieldCheck/></div><SectionEyebrow>RESTRICTED AREA</SectionEyebrow><h1>This space is<br/><em>for the owner.</em></h1><p>Your account does not have administrator permissions.</p><Link to="/dashboard" className="button button-dark">Return to my account <ArrowRight size={15}/></Link></div>;
-  return <div className="admin-page page-shell"><div className="admin-heading"><div><SectionEyebrow>THE OWNER'S WORKSPACE</SectionEyebrow><h1>Owner <em>studio.</em></h1><p>One person. One personal collection. One private inbox.</p></div><div className="admin-account-pill"><span className="admin-account-avatar">A</span><span><strong>Owner account</strong><small>Full access</small></span><BadgeCheck size={16}/></div></div><div className="admin-layout"><aside className="admin-sidebar"><span className="admin-nav-caption">WORKSPACE</span>{(['overview', 'content', 'members', 'plans', 'payments'] as const).map((t) => <button key={t} onClick={() => setTab(t)} className={tab === t ? 'active' : ''}>{t === 'overview' ? <Sparkles/> : t === 'content' ? <ImageIcon/> : t === 'members' ? <UserRound/> : t === 'plans' ? <Crown/> : <Wallet/>}{t.charAt(0).toUpperCase() + t.slice(1)}</button>)}<span className="admin-nav-caption settings-caption">QUICK LINKS</span><Link to="/chat"><MessageCircle/> Private inbox <ArrowUpRight/></Link><Link to="/"><Eye/> View website <ArrowUpRight/></Link></aside><div className="admin-content">{tab === 'overview' && <><div className="admin-content-title"><div><h2>Welcome back.</h2><p>Here is what is happening inside your private world.</p></div><span className="live-pill"><span/> LIVE WORKSPACE</span></div><div className="admin-metric-grid"><Metric label="REGISTERED MEMBERS" value={String(members.length).padStart(2, '0')} icon={<UserRound/>} hint="Member profiles"/><Metric label="CONTENT ITEMS" value={String(content.length).padStart(2, '0')} icon={<ImageIcon/>} hint="Across your library"/><Metric label="ACTIVE CONTENT" value={String(content.filter((x: any) => x.is_published).length).padStart(2, '0')} icon={<Eye/>} hint="Published to the site"/><Metric label="BITCOIN ORDERS" value={String(paymentOrders.length).padStart(2, '0')} icon={<Wallet/>} hint="Invoice and payment records"/></div><div className="admin-panel"><div className="admin-panel-heading"><div><SectionEyebrow>RECENT CONTENT</SectionEyebrow><h3>My private library</h3></div><button onClick={() => setTab('content')} className="small-link">Manage my collection <ArrowRight size={13}/></button></div><div className="admin-table"><div className="admin-table-head"><span>TITLE</span><span>TYPE</span><span>ACCESS</span><span>STATUS</span></div>{content.slice(0, 5).map((x: any) => <div className="admin-table-row" key={x.id}><strong>{x.title}</strong><span>{x.content_type}</span><span>{x.access_level}</span><span className={`status-chip ${x.is_published ? 'published' : 'draft'}`}>{x.is_published ? 'Published' : 'Draft'}</span></div>)}{!content.length && <p className="empty-table">Your private collection is ready for its first addition.</p>}</div></div><div className="admin-panel admin-note-panel"><ShieldCheck/><div><strong>Payments are not yet connected</strong><p>Configure BTCPay Server secrets and deploy the invoice and webhook functions before accepting live Bitcoin payments. Do not grant access manually based on screenshots.</p></div></div></>}
-      {tab === 'content' && <><div className="admin-content-title"><div><h2>My content library</h2><p>Add private photographs and films, then choose who may view each one.</p></div></div><form className="admin-upload-form" onSubmit={upload}><h3>Add to my private collection</h3><p className="admin-upload-intro">Your private originals stay protected. Photographs are resized and converted to WebP automatically; videos remain in MP4 or WebM, with a separate WebP cover for the gallery.</p><div className="admin-form-grid"><label>Collection title<input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="e.g. Velvet-light boudoir portraits"/></label><label>Collection category<select value={category} onChange={(e) => setCategory(e.target.value)}><option>Intimate portraits</option><option>Boudoir collection</option><option>Artistic nude</option><option>Erotic photo set</option><option>Private picture set</option><option>VIP nude collection</option><option>Adult video collection</option><option>Behind the scenes</option><option>Public portraits</option></select></label><label>Media format<select value={type} onChange={(e) => { setType(e.target.value as 'image' | 'video'); setFile(null); if (mediaInputRef.current) mediaInputRef.current.value = ''; }}><option value="image">Photograph / nude image</option><option value="video">Adult video</option></select></label><label>Who may view it?<select value={access} onChange={(e) => setAccess(e.target.value)}><option value="public">Public</option><option value="members">All active members</option><option value="vip">VIP members only</option><option value="premium">One-time purchase</option><option value="private">By personal invitation</option></select></label><label className="full-field">Description<textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the mood, style and contents of this collection…"/></label><label className="full-field file-field">Private original — {type === 'image' ? 'automatically converted to WebP' : 'MP4, WebM or MOV'}<input ref={mediaInputRef} type="file" accept={type === 'image' ? 'image/jpeg,image/png,image/webp,image/avif' : 'video/mp4,video/webm,video/quicktime'} onChange={(e) => setFile(e.target.files?.[0] || null)} required/><small>{type === 'image' ? 'JPEG, PNG, WebP or AVIF · up to 40 MB before optimization · resized to a maximum 2,400 px edge and compressed as WebP.' : 'MP4 (H.264) is recommended · WebM and MOV are accepted · maximum 450 MB. The video stays in its video format; its separate cover is converted to WebP.'}</small></label><label className="full-field file-field">Public-safe cover image (required)<input ref={previewInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" required onChange={(e) => { setPreviewFile(e.target.files?.[0] || null); setPreviewConsent(false); }}/><small>Required for every item: choose a separate, non-explicit cover image for the gallery card or video poster. It is resized, converted to WebP and stored in the public preview bucket. Never upload the private original here.</small></label><label className="adult-consent-check full-field"><input type="checkbox" checked={contentConsent} onChange={(e) => setContentConsent(e.target.checked)} required/><span>I confirm that everyone shown in the private original is an adult, has knowingly consented to this specific content and its publication, and that I have all necessary rights to upload it.</span></label><label className="adult-consent-check full-field"><input type="checkbox" checked={previewConsent} onChange={(e) => setPreviewConsent(e.target.checked)} disabled={!previewFile} required/><span>I confirm that this separate cover image is non-explicit, contains no visible nudity and is approved for public display.</span></label></div><button className="button button-dark" disabled={!file || uploadProgress !== null}>{uploadProgress !== null && uploadProgress > 0 && uploadProgress < 100 ? `Uploading ${uploadProgress}%…` : 'Add to my private collection'} <ArrowUpRight size={14}/></button>{uploadProgress !== null && <div className="media-upload-progress" role="status" aria-live="polite"><div className="media-upload-progress-track"><span style={{width: `${uploadProgress}%`}}/></div><small>{uploadProgress}% uploaded</small></div>}{uploadMessage && <div className={uploadMessage.startsWith('Error:') ? 'inline-error' : 'inline-success'}>{uploadMessage}</div>}</form><div className="admin-panel"><div className="admin-panel-heading"><h3>All content</h3><span>{content.length} items</span></div><div className="admin-table"><div className="admin-table-head"><span>TITLE</span><span>TYPE</span><span>ACCESS</span><span>STATUS</span></div>{content.map((x: any) => <div className="admin-table-row admin-content-row" key={x.id}><strong>{x.title}</strong><span>{x.content_type}</span><span>{x.access_level}</span><span className={`status-chip ${x.is_published ? 'published' : 'draft'}`}>{x.is_published ? 'Published' : 'Draft'}</span><button className="small-link" onClick={async () => { const next = !x.is_published; const { error } = await supabase!.from('content_items').update({ is_published: next, published_at: next ? new Date().toISOString() : null }).eq('id', x.id); if (!error) queryClient.invalidateQueries({ queryKey: ['owner-content'] }); }}>{x.is_published ? 'Unpublish' : 'Publish'}</button><button className="small-link delete-link" onClick={async () => { if (!window.confirm(`Permanently remove “${x.title}” and its stored media?`)) return; const { error } = await supabase!.from('content_items').delete().eq('id', x.id); if (error) { setUploadMessage(`Error: ${error.message}`); return; } await supabase!.storage.from('private-content').remove([x.storage_path]); if (x.preview_storage_path) await supabase!.storage.from('content-previews').remove([x.preview_storage_path]); queryClient.invalidateQueries({ queryKey: ['owner-content'] }); }}>Delete</button></div>)}</div></div></>}
+  return <div className="admin-page page-shell"><div className="admin-heading"><div><SectionEyebrow>THE OWNER'S WORKSPACE</SectionEyebrow><h1>Owner <em>studio.</em></h1><p>One person. One personal collection. One private inbox.</p></div><div className="admin-account-pill"><span className="admin-account-avatar">A</span><span><strong>Owner account</strong><small>Full access</small></span><BadgeCheck size={16}/></div></div><div className="admin-layout"><aside className="admin-sidebar"><span className="admin-nav-caption">WORKSPACE</span>{(['overview', 'content', 'appearance', 'members', 'plans', 'payments'] as const).map((t) => <button key={t} onClick={() => setTab(t)} className={tab === t ? 'active' : ''}>{t === 'overview' ? <Sparkles/> : t === 'content' ? <ImageIcon/> : t === 'appearance' ? <Sparkles/> : t === 'members' ? <UserRound/> : t === 'plans' ? <Crown/> : <Wallet/>}{t.charAt(0).toUpperCase() + t.slice(1)}</button>)}<span className="admin-nav-caption settings-caption">QUICK LINKS</span><Link to="/chat"><MessageCircle/> Private inbox <ArrowUpRight/></Link><Link to="/"><Eye/> View website <ArrowUpRight/></Link></aside><div className="admin-content">{tab === 'overview' && <><div className="admin-content-title"><div><h2>Welcome back.</h2><p>Here is what is happening inside your private world.</p></div><span className="live-pill"><span/> LIVE WORKSPACE</span></div><div className="admin-metric-grid"><Metric label="REGISTERED MEMBERS" value={String(members.length).padStart(2, '0')} icon={<UserRound/>} hint="Member profiles"/><Metric label="CONTENT ITEMS" value={String(content.length).padStart(2, '0')} icon={<ImageIcon/>} hint="Across your library"/><Metric label="ACTIVE CONTENT" value={String(content.filter((x: any) => x.is_published).length).padStart(2, '0')} icon={<Eye/>} hint="Published to the site"/><Metric label="BITCOIN ORDERS" value={String(paymentOrders.length).padStart(2, '0')} icon={<Wallet/>} hint="Invoice and payment records"/></div><div className="admin-panel"><div className="admin-panel-heading"><div><SectionEyebrow>RECENT CONTENT</SectionEyebrow><h3>My private library</h3></div><button onClick={() => setTab('content')} className="small-link">Manage my collection <ArrowRight size={13}/></button></div><div className="admin-table"><div className="admin-table-head"><span>TITLE</span><span>TYPE</span><span>ACCESS</span><span>STATUS</span></div>{content.slice(0, 5).map((x: any) => <div className="admin-table-row" key={x.id}><strong>{x.title}</strong><span>{x.content_type}</span><span>{x.access_level}</span><span className={`status-chip ${x.is_published ? 'published' : 'draft'}`}>{x.is_published ? 'Published' : 'Draft'}</span></div>)}{!content.length && <p className="empty-table">Your private collection is ready for its first addition.</p>}</div></div><div className="admin-panel admin-note-panel"><ShieldCheck/><div><strong>Payments are not yet connected</strong><p>Configure BTCPay Server secrets and deploy the invoice and webhook functions before accepting live Bitcoin payments. Do not grant access manually based on screenshots.</p></div></div></>}
+      {tab === 'content' && <><div className="admin-content-title"><div><h2>My content library</h2><p>Add private photographs and films, then choose who may view each one.</p></div></div><form className="admin-upload-form" onSubmit={upload}><h3>Add to my private collection</h3><p className="admin-upload-intro">Your private originals stay protected. Photographs are resized and converted to WebP automatically; videos remain in MP4 or WebM, with a separate WebP cover for the gallery.</p><div className="admin-form-grid"><label>Collection title<input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="e.g. Velvet-light boudoir portraits"/></label><label>Collection category<select value={category} onChange={(e) => setCategory(e.target.value)}><option>Intimate portraits</option><option>Boudoir collection</option><option>Artistic nude</option><option>Erotic photo set</option><option>Private picture set</option><option>VIP nude collection</option><option>Adult video collection</option><option>Behind the scenes</option><option>Public portraits</option></select></label><label>Media format<select value={type} onChange={(e) => { setType(e.target.value as 'image' | 'video'); setFile(null); if (mediaInputRef.current) mediaInputRef.current.value = ''; }}><option value="image">Photograph / nude image</option><option value="video">Adult video</option></select></label><label>Who may view it?<select value={access} onChange={(e) => setAccess(e.target.value)}><option value="public">Public</option><option value="members">All active members</option><option value="vip">VIP members only</option><option value="premium">One-time purchase</option><option value="private">By personal invitation</option></select></label><label className="full-field">Description<textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the mood, style and contents of this collection…"/></label><label className="full-field file-field">Private original — {type === 'image' ? 'automatically converted to WebP' : 'MP4, WebM or MOV'}<input ref={mediaInputRef} type="file" accept={type === 'image' ? 'image/jpeg,image/png,image/webp,image/avif' : 'video/mp4,video/webm,video/quicktime'} onChange={(e) => setFile(e.target.files?.[0] || null)} required/><small>{type === 'image' ? 'JPEG, PNG, WebP or AVIF · up to 40 MB before optimization · resized to a maximum 2,400 px edge and compressed as WebP.' : 'MP4 (H.264) is recommended · WebM and MOV are accepted · maximum 450 MB. The video stays in its video format; its separate cover is converted to WebP.'}</small></label><label className="full-field file-field">Public-safe cover image (required)<input ref={previewInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" required onChange={(e) => { setPreviewFile(e.target.files?.[0] || null); setPreviewConsent(false); }}/><small>Required for every item: choose a separate, non-explicit cover image for the gallery card or video poster. It is resized, converted to WebP and stored in the public preview bucket. Never upload the private original here.</small></label><label className="adult-consent-check full-field"><input type="checkbox" checked={contentConsent} onChange={(e) => setContentConsent(e.target.checked)} required/><span>I confirm that everyone shown in the private original is an adult, has knowingly consented to this specific content and its publication, and that I have all necessary rights to upload it.</span></label><label className="adult-consent-check full-field"><input type="checkbox" checked={previewConsent} onChange={(e) => setPreviewConsent(e.target.checked)} disabled={!previewFile} required/><span>I confirm that this separate cover image is non-explicit, contains no visible nudity and is approved for public display.</span></label></div><button className="button button-dark" disabled={!file || uploadProgress !== null}>{uploadProgress !== null && uploadProgress > 0 && uploadProgress < 100 ? `Uploading ${uploadProgress}%…` : 'Add to my private collection'} <ArrowUpRight size={14}/></button>{uploadProgress !== null && <div className="media-upload-progress" role="status" aria-live="polite"><div className="media-upload-progress-track"><span style={{width: `${uploadProgress}%`}}/></div><small>{uploadProgress}% uploaded</small></div>}{uploadMessage && <div className={uploadMessage.startsWith('Error:') ? 'inline-error' : 'inline-success'}>{uploadMessage}</div>}</form><div className="admin-panel"><div className="admin-panel-heading"><h3>All content</h3><span>{content.length} items</span></div><div className="admin-table"><div className="admin-table-head"><span>TITLE</span><span>TYPE</span><span>ACCESS</span><span>STATUS</span></div>{content.map((x: any, index: number) => <div className="admin-table-row admin-content-row" key={x.id}><strong>{x.title}</strong><span>{x.content_type}</span><span>{x.access_level}</span><span className={`status-chip ${x.is_published ? 'published' : 'draft'}`}>{x.is_published ? 'Published' : 'Draft'}</span><div className="content-order-controls"><button className="small-link" disabled={index === 0} aria-label={`Move ${x.title} earlier`} onClick={() => moveContentItem(content, index, -1, queryClient)}>↑</button><button className="small-link" disabled={index === content.length - 1} aria-label={`Move ${x.title} later`} onClick={() => moveContentItem(content, index, 1, queryClient)}>↓</button></div><button className="small-link" onClick={async () => { const next = !x.is_published; const { error } = await supabase!.from('content_items').update({ is_published: next, published_at: next ? new Date().toISOString() : null }).eq('id', x.id); if (!error) { await queryClient.invalidateQueries({ queryKey: ['owner-content'] }); await queryClient.invalidateQueries({ queryKey: ['content-public'] }); await queryClient.invalidateQueries({ queryKey: ['site-artwork-source-content'] }); } }}>{x.is_published ? 'Unpublish' : 'Publish'}</button><button className="small-link delete-link" onClick={async () => { if (!window.confirm(`Permanently remove “${x.title}” and its stored media?`)) return; const { error } = await supabase!.from('content_items').delete().eq('id', x.id); if (error) { setUploadMessage(`Error: ${error.message}`); return; } await supabase!.storage.from('private-content').remove([x.storage_path]); if (x.preview_storage_path) await supabase!.storage.from('content-previews').remove([x.preview_storage_path]); queryClient.invalidateQueries({ queryKey: ['owner-content'] }); }}>Delete</button></div>)}</div></div></>}
+      {tab === 'appearance' && <AppearanceAdminPanel />}
       {tab === 'members' && <><div className="admin-content-title"><div><h2>Members</h2><p>Manage the adults who have joined your private edition. Suspended accounts lose access to paid media, messaging and checkout.</p></div><span className="live-pill">{members.length} ACCOUNTS</span></div><div className="admin-panel"><div className="admin-table"><div className="admin-table-head member-table-head"><span>MEMBER</span><span>USERNAME</span><span>JOINED</span><span>STATUS</span><span>ACTION</span></div>{members.map((m: any) => <div className="admin-table-row member-table-row" key={m.id}><strong>{m.full_name || 'Member'}</strong><span>@{m.username || '—'}</span><span>{formatDate(m.created_at)}</span><span className={`status-chip ${m.status === 'suspended' ? 'draft' : 'published'}`}>{m.status === 'suspended' ? 'Suspended' : 'Active'}</span><button className={`small-link ${m.status === 'suspended' ? '' : 'delete-link'}`} onClick={async () => { const nextStatus = m.status === 'suspended' ? 'active' : 'suspended'; const { error } = await supabase!.from('profiles').update({ status: nextStatus }).eq('id', m.id); if (!error) queryClient.invalidateQueries({ queryKey: ['owner-members'] }); }}>{m.status === 'suspended' ? 'Restore' : 'Suspend'}</button></div>)}</div>{!members.length && <p className="empty-table">New member registrations will appear here.</p>}</div></>}
       {tab === 'plans' && <><div className="admin-content-title"><div><h2>Membership plans</h2><p>Set the price, duration and private access included in each membership.</p></div></div><PlanAdminPanel/></>}
       {tab === 'payments' && <><div className="admin-content-title"><div><h2>Bitcoin payments</h2><p>Review Bitcoin invoices, settlement and order status. Partial, late and overpaid transactions remain locked for your review.</p></div><span className="live-pill">{paymentOrders.length} RECENT ORDERS</span></div><div className="admin-panel owner-payments-panel"><div className="admin-table"><div className="admin-table-head owner-payment-head"><span>ORDER</span><span>MEMBER</span><span>TYPE</span><span>AMOUNT</span><span>STATUS</span><span>DATE</span></div>{paymentOrders.map((o: any) => <div className="admin-table-row owner-payment-row" key={o.id}><div className="owner-order-id"><strong>#{o.id.slice(0, 8).toUpperCase()}</strong><small>Invoice · {o.provider_invoice_id || 'Pending'}</small>{o.transaction_id && <small>TX · {o.transaction_id}</small>}</div><span>{o.user_id.slice(0, 8)}…</span><span>{o.product_type}</span><span>{formatCurrency(Number(o.amount), o.currency)}</span><span className={`status-chip ${o.status === 'confirmed' ? 'published' : 'draft'}`}>{o.status.replaceAll('_', ' ')}</span><span>{formatDate(o.created_at)}</span></div>)}{!paymentOrders.length && <p className="empty-table">No member has started a Bitcoin checkout yet.</p>}</div></div></>}
       </div></div></div>;
 }
+async function moveContentItem(items: any[], index: number, direction: -1 | 1, queryClient: ReturnType<typeof useQueryClient>) {
+  if (!supabase) return;
+  const otherIndex = index + direction;
+  if (otherIndex < 0 || otherIndex >= items.length) return;
+  const current = items[index];
+  const other = items[otherIndex];
+  const currentOrder = Number(current.sort_order ?? index * 10);
+  const otherOrder = Number(other.sort_order ?? otherIndex * 10);
+  const [first, second] = await Promise.all([
+    supabase.from('content_items').update({ sort_order: otherOrder }).eq('id', current.id),
+    supabase.from('content_items').update({ sort_order: currentOrder }).eq('id', other.id),
+  ]);
+  if (first.error || second.error) {
+    window.alert(first.error?.message || second.error?.message || 'The collection order could not be updated.');
+    return;
+  }
+  await queryClient.invalidateQueries({ queryKey: ['owner-content'] });
+  await queryClient.invalidateQueries({ queryKey: ['content-public'] });
+  await queryClient.invalidateQueries({ queryKey: ['site-artwork-source-content'] });
+}
+
+function AppearanceAdminPanel() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { data: assets = fallbackSiteAssets } = useSiteAssets();
+  const { data: savedTheme = defaultSiteTheme } = useSiteTheme();
+  const { data: publishedArtwork = [] } = useQuery({
+    queryKey: ['site-artwork-source-content'],
+    enabled: Boolean(supabase),
+    queryFn: async () => {
+      const client = supabase;
+      if (!client) return [];
+      const { data, error } = await client.from('content_items')
+        .select('id,title,content_type,category,preview_url,preview_storage_path,sort_order,published_at')
+        .eq('is_published', true)
+        .not('preview_url', 'is', null)
+        .not('preview_storage_path', 'is', null)
+        .order('sort_order', { ascending: true })
+        .order('published_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+  const [linkedContentIds, setLinkedContentIds] = useState<Partial<Record<AssetSlot, string>>>({});
+  const [theme, setTheme] = useState<SiteTheme>(defaultSiteTheme);
+  const [selectedFiles, setSelectedFiles] = useState<Partial<Record<AssetSlot, File>>>({});
+  const [altTexts, setAltTexts] = useState<Partial<Record<AssetSlot, string>>>({});
+  const [publicMediaConfirmed, setPublicMediaConfirmed] = useState<Partial<Record<AssetSlot, boolean>>>({});
+  const [workingSlot, setWorkingSlot] = useState<AssetSlot | null>(null);
+  const [message, setMessage] = useState('');
+  const [themeBusy, setThemeBusy] = useState(false);
+  const [themeMessage, setThemeMessage] = useState('');
+
+  useEffect(() => { setTheme({ ...defaultSiteTheme, ...savedTheme }); }, [savedTheme]);
+
+  const saveTheme = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!supabase || !user) { setThemeMessage('Sign in with the owner account before changing the appearance.'); return; }
+    const validColors = Object.values(theme).every((value) => /^#[0-9a-fA-F]{6}$/.test(value));
+    if (!validColors) { setThemeMessage('Use a valid six-digit HEX colour for every theme field.'); return; }
+    setThemeBusy(true);
+    setThemeMessage('');
+    const { error } = await supabase.from('site_appearance').upsert({ id: true, theme, updated_by: user.id, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    setThemeBusy(false);
+    if (error) { setThemeMessage(error.message); return; }
+    await queryClient.invalidateQueries({ queryKey: ['site-theme'] });
+    setThemeMessage('Your website colour palette has been saved. Refresh the public website to see the new palette.');
+  };
+
+  const saveAsset = async (slot: AssetSlot) => {
+    const selected = selectedFiles[slot];
+    const definition = siteAssetSlots.find((entry) => entry.slot === slot);
+    if (!selected || !definition || !supabase || !user) return;
+    if (!publicMediaConfirmed[slot]) { setMessage('Confirm that this artwork is suitable for public display before uploading it.'); return; }
+    setWorkingSlot(slot);
+    setMessage('');
+    let uploadedPath: string | null = null;
+    try {
+      const isVideo = selected.type.startsWith('video/');
+      if (isVideo && !definition.allowVideo) throw new Error('This website position accepts photographs only.');
+      if (isVideo && !['video/mp4', 'video/webm'].includes(selected.type)) throw new Error('Featured videos must be MP4 or WebM. Convert MOV files to MP4 (H.264) before uploading.');
+      let storedFile: File;
+      if (isVideo) {
+        if (selected.size > 100 * 1024 * 1024) throw new Error('A featured website video must be 100 MB or smaller. Use a short MP4 or WebM teaser.');
+        storedFile = prepareVideoForStorage(selected);
+      } else {
+        storedFile = await convertImageToWebP(selected, { maxDimension: 2400, quality: 0.84, maxInputBytes: 40 * 1024 * 1024 });
+      }
+      const extension = storedFile.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || (isVideo ? 'mp4' : 'webp');
+      uploadedPath = `${user.id}/site/${slot}/${crypto.randomUUID()}.${extension}`;
+      await uploadToPrivateStorage(supabase, 'site-assets', uploadedPath, storedFile);
+      const publicUrl = supabase.storage.from('site-assets').getPublicUrl(uploadedPath).data.publicUrl;
+      const previousPath = assets[slot]?.storage_path;
+      const { error } = await supabase.from('site_assets').upsert({
+        slot,
+        label: definition.label,
+        description: definition.description,
+        media_type: isVideo ? 'video' : 'image',
+        storage_path: uploadedPath,
+        source_content_id: null,
+        public_url: publicUrl,
+        alt_text: altTexts[slot]?.trim() || definition.altText,
+        sort_order: siteAssetSlots.findIndex((entry) => entry.slot === slot) * 10,
+        is_active: true,
+        updated_by: user.id,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'slot' });
+      if (error) throw error;
+      if (previousPath) await supabase.storage.from('site-assets').remove([previousPath]);
+      setSelectedFiles((current) => ({ ...current, [slot]: undefined }));
+      setPublicMediaConfirmed((current) => ({ ...current, [slot]: false }));
+      setMessage(`${definition.label} has been updated. The public website will now use your new ${isVideo ? 'video' : 'WebP image'}.`);
+      await queryClient.invalidateQueries({ queryKey: ['site-assets'] });
+    } catch (error) {
+      if (uploadedPath) await supabase.storage.from('site-assets').remove([uploadedPath]);
+      setMessage(error instanceof Error ? error.message : 'The site artwork could not be uploaded. Please try again.');
+    } finally {
+      setWorkingSlot(null);
+    }
+  };
+
+  const usePublishedCover = async (slot: AssetSlot) => {
+    const client = supabase;
+    const contentId = linkedContentIds[slot];
+    const definition = siteAssetSlots.find((entry) => entry.slot === slot);
+    const item = publishedArtwork.find((entry: any) => entry.id === contentId);
+    if (!client || !user || !definition || !item?.preview_url) return;
+    const previousPath = assets[slot]?.storage_path;
+    setWorkingSlot(slot);
+    setMessage('');
+    try {
+      const { error } = await client.from('site_assets').upsert({
+        slot,
+        label: definition.label,
+        description: definition.description,
+        media_type: 'image',
+        storage_path: null,
+        source_content_id: item.id,
+        public_url: item.preview_url,
+        alt_text: definition.altText,
+        sort_order: siteAssetSlots.findIndex((entry) => entry.slot === slot) * 10,
+        is_active: true,
+        updated_by: user.id,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'slot' });
+      if (error) throw error;
+      if (previousPath) await client.storage.from('site-assets').remove([previousPath]);
+      setMessage(`${definition.label} now uses the public-safe cover for “${item.title}”.`);
+      setLinkedContentIds((current) => ({ ...current, [slot]: '' }));
+      await queryClient.invalidateQueries({ queryKey: ['site-assets'] });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'The selected content cover could not be assigned.');
+    } finally {
+      setWorkingSlot(null);
+    }
+  };
+
+  const resetAsset = async (slot: AssetSlot) => {
+    if (!supabase) return;
+    const currentPath = assets[slot]?.storage_path;
+    const { error } = await supabase.from('site_assets').delete().eq('slot', slot);
+    if (error) { setMessage(error.message); return; }
+    if (currentPath) await supabase.storage.from('site-assets').remove([currentPath]);
+    await queryClient.invalidateQueries({ queryKey: ['site-assets'] });
+    setMessage(`${siteAssetSlots.find((entry) => entry.slot === slot)?.label || 'Artwork'} has been reset to its Unsplash backup.`);
+  };
+
+  const colorFields: Array<{ key: keyof SiteTheme; label: string; help: string }> = [
+    { key: 'primary', label: 'Primary buttons and brand colour', help: 'Main buttons, navigation accents and active controls.' },
+    { key: 'accent', label: 'Accent colour', help: 'Emphasis text, highlights and decorative details.' },
+    { key: 'background', label: 'Page background', help: 'Main website background.' },
+    { key: 'surface', label: 'Card and panel background', help: 'Soft surfaces, cards and secondary panels.' },
+    { key: 'text', label: 'Main text colour', help: 'Primary body text and headings.' },
+    { key: 'muted', label: 'Muted text colour', help: 'Secondary text, captions and supporting labels.' },
+    { key: 'deep', label: 'Deep background colour', help: 'Hero, footer and dark feature sections.' },
+    { key: 'highlight', label: 'Highlight colour', help: 'Small decorative accents and light button details.' },
+    { key: 'border', label: 'Border colour', help: 'Dividers, outlines and card borders.' },
+  ];
+
+  return <div className="appearance-admin-panel">
+    <div className="admin-content-title"><div><h2>Website appearance</h2><p>Change the photography, featured video and colour palette used across the public website without editing React files.</p></div><span className="live-pill">OWNER CONTROLS</span></div>
+    <section className="admin-panel appearance-theme-panel">
+      <div className="admin-panel-heading"><div><SectionEyebrow>COLOUR PALETTE</SectionEyebrow><h3>Set the mood</h3><p>Choose a colour for each part of the website. The live preview below updates as you edit.</p></div></div>
+      <form onSubmit={saveTheme}>
+        <div className="appearance-color-grid">{colorFields.map((field) => <label className="appearance-color-field" key={field.key}><span>{field.label}</span><small>{field.help}</small><div><input type="color" value={theme[field.key]} onChange={(event) => setTheme((current) => ({ ...current, [field.key]: event.target.value }))}/><input type="text" value={theme[field.key]} maxLength={7} pattern="^#[0-9a-fA-F]{6}$" onChange={(event) => setTheme((current) => ({ ...current, [field.key]: event.target.value }))}/></div></label>)}</div>
+        <div className="appearance-theme-preview" style={{ background: theme.background, color: theme.text, borderColor: theme.border }}><div><strong>Live palette preview</strong><span style={{ color: theme.muted }}>Your website, styled your way.</span></div><button type="button" style={{ background: theme.primary, color: '#ffffff' }}>Primary button</button><span className="appearance-preview-chip" style={{ background: theme.surface, color: theme.primary, borderColor: theme.border }}>Accent surface</span><em style={{ color: theme.accent }}>A little after dark.</em></div>
+        <button className="button button-dark" disabled={themeBusy}>{themeBusy ? 'Saving palette…' : 'Save website colours'} <ArrowUpRight size={14}/></button>
+        {themeMessage && <div className={themeMessage.includes('saved') ? 'inline-success' : 'inline-error'}>{themeMessage}</div>}
+      </form>
+    </section>
+    <section className="appearance-assets-section">
+      <div className="admin-content-title"><div><h2>Images and featured videos</h2><p>Each card below controls one fixed visual position on your website. Images are converted to WebP. Short feature videos remain MP4 or WebM.</p></div></div>
+      <div className="appearance-asset-grid">{siteAssetSlots.map((slot) => {
+        const asset = assets[slot.slot];
+        const chosen = selectedFiles[slot.slot];
+        return <article className="appearance-asset-card" key={slot.slot}>
+          <div className="appearance-asset-preview">{asset.media_type === 'video' ? <video src={asset.public_url} muted playsInline controls preload="metadata"/> : <img src={asset.public_url} alt={asset.alt_text || slot.altText} loading="lazy"/>}<span>{asset.source_content_id ? 'CONTENT LIBRARY' : asset.storage_path ? 'OWNER UPLOAD' : 'UNSPLASH BACKUP'}</span></div>
+          <div className="appearance-asset-body"><h3>{slot.label}</h3><p>{slot.description}</p>
+            <label className="file-field">Replace with {slot.allowVideo ? 'an image or short video' : 'a photograph'}<input type="file" accept={slot.allowVideo ? 'image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm' : 'image/jpeg,image/png,image/webp,image/avif'} onChange={(event) => { const file = event.target.files?.[0]; setSelectedFiles((current) => ({ ...current, [slot.slot]: file })); setPublicMediaConfirmed((current) => ({ ...current, [slot.slot]: false })); }}/></label>
+            {chosen && <small className="appearance-selected-file">Selected: {chosen.name}</small>}
+            {publishedArtwork.length > 0 && <div className="appearance-link-content"><label>Or use a published collection cover<select value={linkedContentIds[slot.slot] || ''} onChange={(event) => setLinkedContentIds((current) => ({ ...current, [slot.slot]: event.target.value }))}><option value="">Choose a published cover…</option>{publishedArtwork.map((item: any) => <option key={item.id} value={item.id}>{item.title} · {item.content_type === 'video' ? 'video cover' : 'photo cover'}</option>)}</select></label><button className="small-link" type="button" disabled={!linkedContentIds[slot.slot] || workingSlot !== null} onClick={() => void usePublishedCover(slot.slot)}>Use selected cover</button><small>Only a published WebP cover from the content-previews bucket is used here. The private original remains protected.</small></div>}
+            <label className="appearance-alt-field">Image description<input value={altTexts[slot.slot] ?? asset.alt_text ?? slot.altText} onChange={(event) => setAltTexts((current) => ({ ...current, [slot.slot]: event.target.value }))} placeholder="Describe this image for accessibility"/></label>
+            <label className="adult-consent-check"><input type="checkbox" checked={Boolean(publicMediaConfirmed[slot.slot])} onChange={(event) => setPublicMediaConfirmed((current) => ({ ...current, [slot.slot]: event.target.checked }))}/><span>I confirm this image or video is suitable for public display and contains no explicit nudity or private member content.</span></label>
+            <div className="appearance-asset-actions"><button className="button button-dark" type="button" disabled={!chosen || workingSlot !== null} onClick={() => void saveAsset(slot.slot)}>{workingSlot === slot.slot ? 'Uploading…' : 'Save artwork'}</button>{(asset.storage_path || asset.source_content_id) && <button className="small-link delete-link" type="button" onClick={() => void resetAsset(slot.slot)}>Restore backup</button>}</div>
+          </div>
+        </article>;
+      })}</div>
+      {message && <div className={message.includes('updated') || message.includes('reset') ? 'inline-success' : 'inline-error'}>{message}</div>}
+    </section>
+    <div className="admin-panel appearance-help-panel"><ShieldCheck/><div><strong>Public artwork and private originals are kept separate</strong><p>This Appearance area uploads only non-explicit public artwork to the <code>site-assets</code> bucket. Full private photographs and complete videos still go through My Content and remain in <code>private-content</code>; their non-explicit cards use <code>content-previews</code>.</p></div></div>
+  </div>;
+}
+
 function Metric({ label, value, icon, hint }: { label: string; value: string; icon: ReactNode; hint: string }) { return <div className="admin-metric"><span>{label}</span><strong>{value}</strong><small>{hint}</small><i>{icon}</i></div>; }
 function PlanAdminPanel() {
   const queryClient = useQueryClient();
