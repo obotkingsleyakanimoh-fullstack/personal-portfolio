@@ -271,7 +271,25 @@ export function DashboardPage() {
   const { user, profile, isOwner } = useAuth();
   const { data: content = fallbackContent } = useContent();
   const [membership, setMembership] = useState<{ status: string; ends_at: string; plan_name: string } | null>(null);
-  useEffect(() => { if (!supabase || !user) return; supabase.from('memberships').select('status,ends_at,membership_plans(name)').eq('user_id', user.id).eq('status', 'active').lte('starts_at', new Date().toISOString()).gt('ends_at', new Date().toISOString()).order('ends_at', { ascending: false }).limit(1).maybeSingle().then(({ data }) => { if (data) setMembership({ status: data.status, ends_at: data.ends_at, plan_name: (data.membership_plans as { name: string } | null)?.name || 'Membership' }); }); }, [user]);
+  useEffect(() => {
+    const client = supabase;
+    if (!client || !user) return;
+    client.from('memberships')
+      .select('status,ends_at,membership_plans(name)')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .lte('starts_at', new Date().toISOString())
+      .gt('ends_at', new Date().toISOString())
+      .order('ends_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        // Supabase may infer a joined relationship as an array; use its first row.
+        const planName = data.membership_plans?.[0]?.name || 'Membership';
+        setMembership({ status: data.status, ends_at: data.ends_at, plan_name: planName });
+      });
+  }, [user]);
   if (!user) return <AuthGate title="Your private space awaits." copy="Sign in to view your membership, saved collections and private messages."/>;
   return <div className="member-dashboard page-shell">{profile?.status === 'suspended' && <div className="inline-error account-suspension-notice"><ShieldCheck size={16}/> Your account access has been paused by the owner. Private media, messaging and purchases are unavailable while this restriction is in place.</div>}<div className="dashboard-welcome"><div><SectionEyebrow>A PRIVATE LINE TO ME</SectionEyebrow><h1>Good to see you,<br/><em>{profile?.full_name?.split(' ')[0] || 'friend'}.</em></h1><p>Your membership, private messages and saved moments are gathered here.</p></div><div className="dashboard-date">MEMBER SINCE <strong>{formatDate(user.created_at)}</strong></div></div><div className="dashboard-stat-grid"><div className="dashboard-stat membership-status-stat"><span>MEMBERSHIP STATUS</span><strong>{profile?.status === 'suspended' ? 'Restricted' : membership ? 'Active' : 'Not active'}</strong><small>{profile?.status === 'suspended' ? 'Member access has been restricted by the owner.' : membership ? `${membership.plan_name} · Until ${formatDate(membership.ends_at)}` : 'Choose a membership to unlock the private edition.'}</small><span className="stat-icon"><BadgeCheck/></span></div><div className="dashboard-stat"><span>YOUR COLLECTION</span><strong>{content.length.toString().padStart(2, '0')}</strong><small>Stories and moments in the library</small><span className="stat-icon"><ImageIcon/></span></div><div className="dashboard-stat"><span>PRIVATE CONNECTION</span><strong>01 : 01</strong><small>One private conversation, just between us.</small><span className="stat-icon"><MessageCircle/></span></div></div><div className="dashboard-content-grid"><div className="dashboard-main-card"><div className="dashboard-card-heading"><div><SectionEyebrow>RECENTLY ADDED</SectionEyebrow><h2>From the <em>collection.</em></h2></div><Link to="/gallery" className="small-link">View all <ArrowUpRight size={13}/></Link></div><div className="dashboard-recent-list">{content.slice(0, 3).map((item) => <div className="recent-item" key={item.id}><img src={item.preview_url || portrait} alt=""/><div><strong>{item.title}</strong><small>{item.category}</small></div><LockedMark label={item.access_level === 'public' ? 'Open' : 'Members'}/></div>)}</div></div><div className="dashboard-side-card"><div className="dashboard-side-icon"><Crown/></div><SectionEyebrow>MEMBERSHIP</SectionEyebrow><h3>{membership ? 'Your access is open.' : 'Come a little closer.'}</h3><p>{membership ? 'Your private collection and member features are ready.' : 'Unlock the private picture and video collections, and choose whether one-to-one chat is part of your experience.'}</p><Link to="/membership" className="button button-dark">{membership ? 'View membership' : 'Explore plans'} <ArrowUpRight size={14}/></Link></div></div><div className="dashboard-quick-links"><Link to="/gallery"><ImageIcon/> My gallery <ArrowUpRight/></Link><Link to="/videos"><Video/> Private videos <ArrowUpRight/></Link><Link to="/chat"><MessageCircle/> Private chat <ArrowUpRight/></Link><Link to="/membership"><Crown/> Membership <ArrowUpRight/></Link></div>{isOwner && <div className="owner-redirect"><BadgeCheck/> You are signed in as the owner. <Link to="/admin">Open Owner Studio <ArrowUpRight size={13}/></Link></div>}</div>;
 }
@@ -340,7 +358,19 @@ export function ChatPage() {
     },
   });
   useEffect(() => { if (!supabase || !activeConversation || !user || !messages.length) return; const unread = messages.filter((m: any) => m.sender_id !== user.id && !m.read_at).map((m: any) => m.id); if (unread.length) supabase.from('messages').update({ read_at: new Date().toISOString() }).in('id', unread); }, [activeConversation, messages, user]);
-  useEffect(() => { if (!supabase || !activeConversation) return; const channel = supabase.channel(`conversation:${activeConversation}`).on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `conversation_id=eq.${activeConversation}` }, () => queryClient.invalidateQueries({ queryKey: ['messages', activeConversation] })).subscribe(); return () => { supabase.removeChannel(channel); }; }, [activeConversation, queryClient]);
+  useEffect(() => {
+    const client = supabase;
+    if (!client || !activeConversation) return;
+    const channel = client.channel(`conversation:${activeConversation}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${activeConversation}`,
+      }, () => queryClient.invalidateQueries({ queryKey: ['messages', activeConversation] }))
+      .subscribe();
+    return () => { void client.removeChannel(channel); };
+  }, [activeConversation, queryClient]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length]);
   useEffect(() => () => { if (recorderRef.current?.state === 'recording') recorderRef.current.stop(); }, []);
 

@@ -27,24 +27,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    if (!supabase) { setLoading(false); return; }
+    // Capture the configured client once so TypeScript can safely narrow it
+    // inside the async callbacks below.
+    const client = supabase;
+    if (!client) { setLoading(false); return; }
     let alive = true;
-    supabase.auth.getSession().then(async ({ data }) => {
+    client.auth.getSession().then(async ({ data }) => {
       if (!alive) return;
       setSession(data.session);
       if (data.session?.user) {
-        const { data: p } = await supabase.from('profiles').select('id,full_name,username,avatar_url,role,status,created_at').eq('id', data.session.user.id).maybeSingle();
+        const { data: p } = await client.from('profiles').select('id,full_name,username,avatar_url,role,status,created_at').eq('id', data.session.user.id).maybeSingle();
         if (alive) setProfile((p as Profile | null) ?? null);
       }
       if (alive) setLoading(false);
     });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => {
+    const { data: listener } = client.auth.onAuthStateChange((_event, next) => {
       setSession(next);
       if (!next) { setProfile(null); setLoading(false); }
       else {
         window.setTimeout(async () => {
           if (!alive) return;
-          const { data: p } = await supabase.from('profiles').select('id,full_name,username,avatar_url,role,status,created_at').eq('id', next.user.id).maybeSingle();
+          const { data: p } = await client.from('profiles').select('id,full_name,username,avatar_url,role,status,created_at').eq('id', next.user.id).maybeSingle();
           if (alive) { setProfile((p as Profile | null) ?? null); setLoading(false); }
         }, 0);
       }
