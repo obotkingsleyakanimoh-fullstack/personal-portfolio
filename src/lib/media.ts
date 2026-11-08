@@ -74,6 +74,34 @@ export async function convertImageToWebP(
   }
 }
 
+
+export type WatermarkPosition = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center';
+export interface WatermarkSettings { enabled: boolean; text: string; position: WatermarkPosition; opacity: number; size: number; }
+export const defaultWatermarkSettings: WatermarkSettings = { enabled: true, text: 'Atelier After Dark', position: 'bottom-right', opacity: 0.62, size: 0.035 };
+
+/** Burns a text watermark into a still image before it is uploaded. */
+export async function applyTextWatermark(source: File, settings: WatermarkSettings): Promise<File> {
+  if (!settings.enabled || !settings.text.trim()) return source;
+  const bitmap = await createImageBitmap(source);
+  try {
+    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+    const ctx = canvas.getContext('2d'); if (!ctx) throw new Error('Could not prepare the watermark canvas.');
+    ctx.drawImage(bitmap, 0, 0);
+    const fontSize = Math.max(16, Math.round(Math.min(canvas.width, canvas.height) * Math.min(0.08, Math.max(0.018, settings.size))));
+    const pad = Math.round(fontSize * 0.8); const label = settings.text.trim().slice(0, 60);
+    ctx.font = `600 ${fontSize}px Georgia, serif`; ctx.textBaseline = 'middle';
+    const width = ctx.measureText(label).width; let x = pad, y = canvas.height - pad;
+    if (settings.position.includes('right')) x = canvas.width - width - pad;
+    if (settings.position.includes('top')) y = pad + fontSize / 2;
+    if (settings.position === 'center') { x = (canvas.width - width) / 2; y = canvas.height / 2; }
+    ctx.save(); ctx.globalAlpha = Math.min(0.95, Math.max(0.15, settings.opacity));
+    ctx.shadowColor = 'rgba(0,0,0,.65)'; ctx.shadowBlur = Math.max(3, fontSize * 0.18); ctx.fillStyle = '#ffffff';
+    ctx.fillText(label, Math.max(pad, x), Math.max(fontSize / 2, Math.min(canvas.height - fontSize / 2, y))); ctx.restore();
+    const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Could not encode the watermarked image.')), 'image/webp', 0.84));
+    return new File([blob], `${source.name.replace(/\.[^.]+$/, '')}-watermarked.webp`, { type: 'image/webp', lastModified: Date.now() });
+  } finally { bitmap.close(); }
+}
+
 /** Validate a browser-playable video without pretending that a still-image format can encode video. */
 export function prepareVideoForStorage(source: File): File {
   if (source.size > VIDEO_INPUT_LIMIT) {

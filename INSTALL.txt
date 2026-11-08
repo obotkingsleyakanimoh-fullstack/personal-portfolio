@@ -1,0 +1,21 @@
+ATELIER AFTER DARK - SECURITY + PHOTO WATERMARK PATCH
+
+Replace these files in the existing project:
+- src/lib/media.ts
+- src/lib/data.ts
+- src/lib/siteSettings.ts
+- src/pages/Pages.tsx
+
+Add and apply this Supabase migration after migrations 001-004:
+- supabase/migrations/202611080005_private_content_watermark.sql
+
+The migration restricts the anonymous content_public view to public items only and adds get_visible_content() for authenticated users. The RPC returns public items plus only items allowed by can_access_content(). It also stores owner watermark settings in site_appearance.
+
+Photo originals and their WebP covers receive a permanent text watermark in the browser before upload. The owner can configure watermark text, position, opacity and size in Owner Studio > Content.
+
+LIMITATIONS:
+- Video files are NOT permanently watermarked by this patch. Burn-in requires a server-side video transcoding service (FFmpeg worker or a video platform). The UI explicitly warns about this; do not assume original video downloads carry a watermark.
+- The VVIP live camera room is NOT included in this patch. It needs a live video provider such as LiveKit (server-side token generation and room authorization); a browser-only camera widget would expose the room and be unsafe.
+- The patch does not watermark files that were uploaded before the change. Re-upload images to create watermarked copies.
+
+After applying the migration, test as: logged-out visitor, active tier-1 member, tier-2 member, tier-3 VIP, and owner. Check that each sees only public or entitled content.

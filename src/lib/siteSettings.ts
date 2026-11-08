@@ -51,6 +51,8 @@ export const fallbackSiteAssets: Record<AssetSlot, SiteAsset> = {
   auth_hero: { slot: 'auth_hero', label: 'Login and registration visual', description: 'The large image beside the sign-in and registration form.', media_type: 'image', storage_path: null, source_content_id: null, public_url: import.meta.env.VITE_OWNER_PORTRAIT_URL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1400&q=82', alt_text: 'Personal portrait', sort_order: 70, is_active: true },
 };
 
+export const loadingSiteAssets: Record<AssetSlot, SiteAsset> = Object.fromEntries(Object.entries(fallbackSiteAssets).map(([key, value]) => [key, { ...value, public_url: '' }])) as Record<AssetSlot, SiteAsset>;
+
 export const siteAssetSlots: Array<{ slot: AssetSlot; label: string; description: string; allowVideo: boolean; altText: string }> = [
   { slot: 'home_hero', label: 'Homepage hero portrait', description: 'Large image or muted feature video on the right side of the homepage opening section.', allowVideo: true, altText: 'Homepage personal portrait' },
   { slot: 'home_intro', label: 'Homepage introduction portrait', description: 'Portrait or muted feature video beside the personal introduction section.', allowVideo: true, altText: 'Personal introduction portrait' },
@@ -64,8 +66,6 @@ export const siteAssetSlots: Array<{ slot: AssetSlot; label: string; description
 export function useSiteAssets() {
   return useQuery({
     queryKey: ['site-assets'],
-    initialData: fallbackSiteAssets,
-    initialDataUpdatedAt: 0,
     queryFn: async (): Promise<Record<AssetSlot, SiteAsset>> => {
       if (!supabase) return fallbackSiteAssets;
       const { data, error } = await supabase.from('site_assets').select('slot,label,description,media_type,storage_path,source_content_id,public_url,alt_text,sort_order,is_active').eq('is_active', true).order('sort_order');
