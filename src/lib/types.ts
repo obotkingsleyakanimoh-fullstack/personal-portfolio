@@ -7,6 +7,7 @@ export interface Profile {
   role: Role;
   status?: 'active' | 'suspended';
   created_at?: string;
+  marketing_opt_in?: boolean;
 }
 export interface MembershipPlan {
   id: string;

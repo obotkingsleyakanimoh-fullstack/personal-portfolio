@@ -37,12 +37,12 @@ export function SiteLayout() {
 
   return (
     <div className="min-h-screen bg-paper text-ink">
-      <div className="announcement-bar"><span className="adult-chip">18+</span> An intimate personal collection <span className="announcement-dot">✦</span> Sensual by nature · Shared by consent</div>
+      <div className="announcement-bar"><span className="adult-chip">18+</span> Pink Doll Mansion <span className="announcement-dot">✦</span> A private world of beauty, confidence and self-expression</div>
       <header className="site-header">
         <div className="site-header-inner">
           <Link to="/" className="brand-lockup" aria-label={`${siteName} home`}>
-            <span className="brand-mark">a.</span>
-            <span className="brand-copy"><span>{siteName}</span><small>MY PERSONAL EDITION · 18+</small></span>
+            <span className="brand-mark">P</span>
+            <span className="brand-copy"><span>{siteName}</span><small>THE PRIVATE MANSION · 18+</small></span>
           </Link>
           <nav className="desktop-nav" aria-label="Main navigation">
             {publicLinks.map((item) => (
@@ -86,8 +86,8 @@ export function SiteLayout() {
       <footer className="site-footer">
         <div className="footer-top">
           <div className="footer-brand-block">
-            <Link to="/" className="brand-lockup footer-brand"><span className="brand-mark">a.</span><span className="brand-copy"><span>{siteName}</span><small>MY PERSONAL EDITION · 18+</small></span></Link>
-            <p>A personal collection of sensual portraits, artistic nude photography, boudoir, erotic films and private one-to-one conversation. For adults only. Every image is shared by choice, with consent and care.</p>
+            <Link to="/" className="brand-lockup footer-brand"><span className="brand-mark">P</span><span className="brand-copy"><span>{siteName}</span><small>THE PRIVATE MANSION · 18+</small></span></Link>
+            <p>Pink Doll Mansion is a private, adults-only collection of sensual portraits, boudoir photography, artistic imagery and personal experiences, shared by choice and with care.</p>
           </div>
           <div className="footer-column"><span className="footer-heading">Explore my world</span><Link to="/about">The story</Link><Link to="/gallery">Gallery</Link><Link to="/videos">Private videos</Link><Link to="/membership">Membership</Link></div>
           <div className="footer-column"><span className="footer-heading">Your private access</span><Link to="/login">Sign in</Link><Link to="/dashboard">My account</Link><Link to="/chat">Private chat</Link><Link to="/contact">Write to me</Link></div>
@@ -95,7 +95,7 @@ export function SiteLayout() {
         </div>
         <div className="footer-bottom"><span>© {new Date().getFullYear()} {siteName}. All rights reserved.</span><span>Shared on my terms <Heart size={12} fill="currentColor" /></span><span>{ownerName}</span></div>
       </footer>
-      {!ageAccepted && <div className="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-gate-title"><div className="age-gate-card"><div className="age-gate-mark">a.</div><span className="age-gate-kicker">PRIVATE EDITION · 18+</span><h2 id="age-gate-title">A more intimate side of me, <em>for adults only.</em></h2><p>My personal collection is intended for adults aged 18 and over. By entering, you confirm that you meet the legal age requirement where you live and that viewing adult-oriented material is lawful for you.</p><div className="age-gate-actions"><button className="button button-dark" onClick={acceptAdultEntry}>I am 18 or older · Enter</button><button className="age-gate-leave" onClick={leaveAdultEntry}>I am under 18 · Leave</button></div><small>Consent, privacy, respect and lawful adult content are essential.</small></div></div>}
+      {!ageAccepted && <div className="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-gate-title"><div className="age-gate-card"><div className="age-gate-mark">P</div><span className="age-gate-kicker">PINK DOLL MANSION · 18+</span><h2 id="age-gate-title">Welcome to Pink Doll Mansion, <em>for adults only.</em></h2><p>Pink Doll Mansion is intended for adults aged 18 and over. By entering, you confirm that you meet the legal age requirement where you live and that viewing adult-oriented material is lawful for you.</p><div className="age-gate-actions"><button className="button button-dark" onClick={acceptAdultEntry}>I am 18 or older · Enter</button><button className="age-gate-leave" onClick={leaveAdultEntry}>I am under 18 · Leave</button></div><small>Consent, privacy, respect and lawful adult content are essential.</small></div></div>}
     </div>
   );
 }

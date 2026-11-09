@@ -10,14 +10,14 @@ update public.membership_plans set
   benefits = array['Members-only intimate picture sets','New private pictures throughout the month','Personal updates and behind-the-scenes notes']
 where slug = 'the-edit';
 update public.membership_plans set
-  name = 'After Dark',
-  slug = 'after-dark',
-  description = 'A more intimate collection of private pictures, adult videos and personal conversation.',
-  benefits = array['Everything in The Tease','Selected exclusive adult videos','Private text, photo and voice-note chat','Early access to new intimate collections']
+  name = 'The Mansion',
+  slug = 'the-mansion',
+  description = 'A deeper look inside Pink Doll Mansion, with private boudoir photography, intimate films and personal conversation.',
+  benefits = array['Everything in The Tease','Selected private films','Private text, photo and voice-note chat','Early access to new intimate collections']
 where slug = 'inner-circle';
 update public.membership_plans set
   description = 'The most personal access, with VIP collections and priority private interaction.',
-  benefits = array['Everything in After Dark','VIP intimate picture and video collections','Priority one-to-one text, photo and voice messages','Priority requests for private audio or video sessions']
+  benefits = array['Everything in The Mansion','VIP intimate picture and video collections','Priority one-to-one text, photo and voice messages','Priority requests for private audio or video sessions']
 where slug = 'private-suite';
 
 

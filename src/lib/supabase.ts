@@ -11,6 +11,6 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
     })
   : null;
 
-export const siteName = import.meta.env.VITE_SITE_NAME || 'Atelier After Dark';
+export const siteName = import.meta.env.VITE_SITE_NAME || 'Pink Doll Mansion';
 export const ownerName = import.meta.env.VITE_OWNER_DISPLAY_NAME || 'The Owner';
 export const ownerTagline = import.meta.env.VITE_OWNER_TAGLINE || 'Sensual portraits, artistic nudes and private conversations — shared on my terms.';

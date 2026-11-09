@@ -1,4 +1,4 @@
-# Deploy Atelier After Dark's frontend
+# Deploy Pink Doll Mansion's frontend
 
 > **Check Vercel eligibility before deploying.** This project is designed for paid access to adult-oriented nude and erotic media. Vercel's current Acceptable Use Policy restricts content it classifies as offensive, obscene, graphic or sexually exploitative. The policy does not clearly approve an explicit adult-membership service. Obtain written confirmation from Vercel that this exact website and business model are permitted before deploying it or serving adult content through it. A paid plan does not override the Acceptable Use Policy. Because memberships are paid, Hobby's non-commercial restriction also makes Hobby unsuitable if Vercel approves the project. See [Vercel's Acceptable Use Policy](https://vercel.com/legal/acceptable-use-policy) and [Hobby plan restrictions](https://vercel.com/docs/plans/hobby).
 
@@ -37,7 +37,7 @@ In **Vercel → Project → Settings → Environment Variables**, add the follow
 |---|---|
 | `VITE_SUPABASE_URL` | `https://ydwqnlovmhtwgbnxeoci.supabase.co` |
 | `VITE_SUPABASE_ANON_KEY` | Your Supabase publishable key or legacy anon key |
-| `VITE_SITE_NAME` | `Atelier After Dark` |
+| `VITE_SITE_NAME` | `Pink Doll Mansion` |
 | `VITE_OWNER_DISPLAY_NAME` | The name you want displayed publicly |
 | `VITE_OWNER_TAGLINE` | Your personal tagline |
 | `VITE_OWNER_PORTRAIT_URL` | URL of a public, non-explicit portrait you own or are licensed to use |

@@ -8,3 +8,49 @@ verify_jwt = true
 
 [functions.get-content-url]
 verify_jwt = false
+
+[auth]
+site_url = "https://pinkdollmansion.com"
+additional_redirect_urls = ["https://pinkdollmansion.com/**", "https://www.pinkdollmansion.com/**", "http://localhost:5173/**"]
+
+[auth.email]
+enable_confirmations = true
+
+# The signup-welcome endpoint is public by design, but it only sends to a
+# recently-created auth.users account and records one delivery per account.
+[functions.email-lifecycle]
+verify_jwt = false
+
+[auth.email.template.confirmation]
+subject = "Welcome to Pink Doll Mansion — confirm your email"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Pink Doll Mansion password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.magic_link]
+subject = "Your private Pink Doll Mansion sign-in link"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new Pink Doll Mansion email address"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.invite]
+subject = "You have a private Pink Doll Mansion invitation"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.reauthentication]
+subject = "Confirm your Pink Doll Mansion account action"
+content_path = "./supabase/templates/reauthentication.html"
+
+[auth.email.notification.password_changed]
+enabled = true
+subject = "Your Pink Doll Mansion password was changed"
+content_path = "./supabase/templates/password_changed_notification.html"
+
+[auth.email.notification.email_changed]
+enabled = true
+subject = "Your Pink Doll Mansion email address was changed"
+content_path = "./supabase/templates/email_changed_notification.html"

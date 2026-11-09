@@ -77,7 +77,7 @@ export async function convertImageToWebP(
 
 export type WatermarkPosition = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center';
 export interface WatermarkSettings { enabled: boolean; text: string; position: WatermarkPosition; opacity: number; size: number; }
-export const defaultWatermarkSettings: WatermarkSettings = { enabled: true, text: 'Atelier After Dark', position: 'bottom-right', opacity: 0.62, size: 0.035 };
+export const defaultWatermarkSettings: WatermarkSettings = { enabled: true, text: 'Pink Doll Mansion', position: 'bottom-right', opacity: 0.62, size: 0.035 };
 
 /** Burns a text watermark into a still image before it is uploaded. */
 export async function applyTextWatermark(source: File, settings: WatermarkSettings): Promise<File> {

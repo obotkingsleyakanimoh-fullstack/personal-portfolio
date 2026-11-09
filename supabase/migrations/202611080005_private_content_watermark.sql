@@ -4,7 +4,7 @@
 alter table public.site_appearance
   add column if not exists watermark jsonb not null default '{
     "enabled": true,
-    "text": "Atelier After Dark",
+    "text": "Pink Doll Mansion",
     "position": "bottom-right",
     "opacity": 0.62,
     "size": 0.035

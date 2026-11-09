@@ -1,8 +1,10 @@
-# Atelier After Dark
+# Pink Doll Mansion
 
 A single-owner personal portfolio and private membership site built with React, TypeScript, Vite, TanStack Router, TanStack Query, Tailwind CSS and Supabase. Members interact with one website owner; there is no member directory, member-to-member messaging, creator marketplace or group chat.
 
-The project includes Supabase authentication, membership plans, protected media delivery, private one-to-one chat, an owner studio, and a BTCPay Server checkout integration. The frontend can be deployed separately from Supabase and BTCPay Server.
+The project includes Supabase authentication, membership plans, protected media delivery, private one-to-one chat, an owner studio, BTCPay Server checkout, and Pink Doll Mansion branded Resend emails. The frontend is prepared for Cloudflare Pages and runs separately from Supabase and BTCPay Server.
+
+**Production domain and email setup:** use [`CLOUDFLARE_AND_EMAIL_SETUP.md`](./CLOUDFLARE_AND_EMAIL_SETUP.md) as the current deployment guide. It covers `pinkdollmansion.com`, Cloudflare Pages, Resend, Supabase Auth templates, transactional emails and opted-in membership reminders.
 
 ## 1. Stack
 
@@ -31,7 +33,7 @@ Before running the site, edit `.env` and set:
 ```env
 VITE_SUPABASE_URL=https://ydwqnlovmhtwgbnxeoci.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY
-VITE_SITE_NAME=Atelier After Dark
+VITE_SITE_NAME=Pink Doll Mansion
 VITE_OWNER_DISPLAY_NAME=YOUR_DISPLAY_NAME
 VITE_OWNER_TAGLINE=YOUR_PERSONAL_TAGLINE
 VITE_OWNER_PORTRAIT_URL=https://YOUR_PUBLIC_IMAGE_URL
@@ -87,28 +89,18 @@ Supabase recommends TUS resumable uploads for files larger than 6 MB, unreliable
 
 ## 4. Supabase database setup
 
-The migrations are in `supabase/migrations/` and must be applied in filename order:
+The migrations are in `supabase/migrations/` and must be applied in filename order on a fresh project:
 
 1. `202611050001_initial_schema.sql`
 2. `202611050002_after_dark_chat_media.sql`
 3. `202611070003_content_previews_webp.sql`
+4. `202611070004_owner_managed_site_appearance.sql`
+5. `202611080005_private_content_watermark.sql`
+6. `202611090006_pink_doll_mansion_email_branding.sql`
 
-The third migration adds `preview_storage_path` and creates the public-safe WebP `content-previews` bucket with owner-only upload/update/delete policies. Apply this migration before using the updated Owner Studio uploader.
+If migrations 001–005 are already applied on the live Supabase project, apply **only** migration 006 (`202611090006_pink_doll_mansion_email_branding.sql`) now. It adds the marketing preference and private email-delivery log, updates the stored Pink Doll Mansion theme and renames the tier-two plan. Use Supabase SQL Editor if the existing migration history was managed manually. Do not blindly run `db push` against a database whose migration history does not match the files.
 
-If the first two migrations are already applied to your connected Supabase project, apply **only** `202611070003_content_previews_webp.sql` now:
-
-- Open Supabase Dashboard → SQL Editor → New query.
-- Paste the contents of that migration file.
-- Run the query and confirm it completes successfully.
-
-If you manage migrations with the Supabase CLI and the first two are already recorded in migration history, use:
-
-```bash
-supabase link --project-ref ydwqnlovmhtwgbnxeoci
-supabase db push
-```
-
-If you previously ran the first migrations manually in SQL Editor, do not blindly run `db push` until you have checked the migration history. Use the SQL Editor method for migration 003 to avoid attempting to re-run earlier migrations.
+Migration 003 creates the public-safe `content-previews` bucket; migration 004 adds owner-managed appearance settings; migration 005 restricts the anonymous content listing and adds private content visibility checks. Keep those in sequence.
 
 ### Create the single owner account
 
@@ -121,11 +113,12 @@ The project is intentionally designed around one owner account. Do not make owne
 
 ## 5. BTCPay Server and Supabase Edge Functions
 
-The frontend uses the Supabase Edge Functions below. They are separate from the Vercel frontend deployment:
+The frontend uses the Supabase Edge Functions below. They run on Supabase, independently of the Cloudflare Pages frontend:
 
 - `create-btc-invoice` — validates the signed-in member and creates an invoice using the selected membership/content price stored in Supabase.
-- `btcpay-webhook` — verifies the BTCPay HMAC signature, fetches the invoice from BTCPay and grants access only after normal settlement and order/amount checks. Late, partial or unexpected payments remain locked for owner review.
+- `btcpay-webhook` — verifies the BTCPay HMAC signature, fetches the invoice from BTCPay and grants access only after normal settlement and order/amount checks. Late, partial or unexpected payments remain locked for owner review. It also sends the membership activation email after payment is verified and access is granted.
 - `get-content-url` — checks a member's access before returning a short-lived URL for protected media.
+- `email-lifecycle` — sends the account welcome email, the two opted-in membership reminders and unsubscribe confirmations through Resend.
 
 Supabase provides its project environment values to Edge Functions. Add the BTCPay values under Supabase Dashboard → Edge Functions → Secrets (or use `supabase secrets set`):
 
@@ -136,7 +129,7 @@ BTCPAY_API_KEY=YOUR_PRIVATE_BTCPAY_API_KEY
 BTCPAY_WEBHOOK_SECRET=YOUR_PRIVATE_WEBHOOK_SECRET
 ```
 
-Do not put these four values in Vercel, `.env`, React code, GitHub, or the browser. Keep them exclusively in Supabase Edge Function Secrets. Do not share the values in screenshots or support chats.
+Do not put these four values in Cloudflare Pages build variables, `.env`, React code, GitHub, or the browser. Keep them exclusively in Supabase Edge Function Secrets. Do not share the values in screenshots or support chats.
 
 Deploy the functions with the Supabase CLI:
 
@@ -144,6 +137,7 @@ Deploy the functions with the Supabase CLI:
 supabase functions deploy create-btc-invoice
 supabase functions deploy get-content-url --no-verify-jwt
 supabase functions deploy btcpay-webhook --no-verify-jwt
+supabase functions deploy email-lifecycle --no-verify-jwt
 ```
 
 `get-content-url` and `btcpay-webhook` perform their own authorization checks; the webhook authenticates BTCPay using the `BTCPAY-SIG` HMAC header. The webhook function must be deployed without Supabase JWT verification because BTCPay is not a logged-in Supabase user.
@@ -158,87 +152,51 @@ The BTCPay webhook secret must be the secret displayed when you created the webh
 
 Before accepting live payments, test invoice creation, normal settlement, pending confirmations, partial payment, overpayment, late settlement, invoice expiry, webhook retries and duplicate webhook delivery. Ensure the Bitcoin node has completed initial blockchain synchronisation. Do not manually activate a membership because a customer sends a screenshot.
 
-## 6. Deploy the frontend to Vercel
+## 6. Deploy the frontend to Cloudflare Pages
 
-**Policy check before deploying:** this site is designed to sell access to adult-oriented nude/erotic material. Vercel's current Acceptable Use Policy prohibits content or conduct it classifies as “offensive, obscene, graphic” or sexually exploitative, among other restrictions. The policy does not give a simple blanket approval for an adult-membership service. Obtain written confirmation from Vercel that this exact website and business model are allowed before deploying the live service or serving adult content through it. A paid plan does not automatically override the Acceptable Use Policy. The Vercel Hobby plan is restricted to personal, non-commercial use; paid memberships make this a commercial project, so Hobby is not the appropriate plan if Vercel approves the service.
+The current production deployment target is **Cloudflare Pages**. Use [`CLOUDFLARE_AND_EMAIL_SETUP.md`](./CLOUDFLARE_AND_EMAIL_SETUP.md) for the complete Cloudflare, DNS, Resend and Supabase email checklist.
 
-Official references:
-
-- [Vercel Acceptable Use Policy](https://vercel.com/legal/acceptable-use-policy)
-- [Vercel plans and Hobby restrictions](https://vercel.com/docs/plans/hobby)
-- [Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite)
-
-If Vercel confirms the project is eligible, follow the separate, step-by-step guide in [`VERCEL_DEPLOYMENT.md`](./VERCEL_DEPLOYMENT.md). The concise settings below are also included for reference:
-
-### A. Prepare the source repository
-
-1. Extract the ZIP to a folder on your computer.
-2. Open the project folder (the one containing `package.json`).
-3. Put the project in a private GitHub repository, or use Vercel's supported Git integration.
-4. Ensure `.env` is not committed. `.gitignore` already excludes local environment files.
-
-### B. Import into Vercel
-
-1. Sign in at [Vercel](https://vercel.com/).
-2. Choose **Add New → Project**.
-3. Import the GitHub repository.
-4. Set the Root Directory to the folder containing `package.json` (normally the repository root).
-5. Choose **Vite** as the framework if Vercel does not detect it automatically.
-6. Use these build settings:
+In Cloudflare Dashboard → **Workers & Pages → Create application → Pages → Connect to Git**, select the repository and use:
 
 | Setting | Value |
 |---|---|
 | Framework preset | Vite |
-| Install command | `npm install` |
 | Build command | `npm run build` |
-| Output directory | `dist` |
-| Development command | `npm run dev` |
+| Build output directory | `dist` |
+| Root directory | folder containing `package.json` |
+| Node version | `22` |
 
-The included `vercel.json` already defines Vite, the build output, security headers and the SPA rewrite needed for TanStack Router deep links.
-
-### C. Add frontend environment variables
-
-In Vercel → Project → Settings → Environment Variables, add the following for Production and Preview as needed:
+Set these frontend build variables under the Cloudflare Pages project settings:
 
 | Variable | Value |
 |---|---|
 | `VITE_SUPABASE_URL` | `https://ydwqnlovmhtwgbnxeoci.supabase.co` |
 | `VITE_SUPABASE_ANON_KEY` | Your Supabase publishable/anon key |
-| `VITE_SITE_NAME` | `Atelier After Dark` |
+| `VITE_SITE_NAME` | `Pink Doll Mansion` |
 | `VITE_OWNER_DISPLAY_NAME` | Your public display name |
-| `VITE_OWNER_TAGLINE` | Your personal tagline |
-| `VITE_OWNER_PORTRAIT_URL` | URL of your public, non-explicit portrait |
-| `VITE_OWNER_HERO_IMAGE_URL` | URL of your public, non-explicit hero image |
-| `VITE_OWNER_FEATURE_IMAGE_URL` | URL of your public, non-explicit feature image |
+| `VITE_OWNER_TAGLINE` | Your public tagline |
+| `VITE_OWNER_PORTRAIT_URL` | Optional public-safe portrait URL |
+| `VITE_OWNER_HERO_IMAGE_URL` | Optional public-safe hero image URL |
+| `VITE_OWNER_FEATURE_IMAGE_URL` | Optional public-safe feature image URL |
 
-Only the Supabase URL and publishable/anon key belong in the browser environment. **Do not add** `BTCPAY_API_KEY`, `BTCPAY_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, or any other private server credential to Vercel.
+Only public frontend values belong in these variables. Do not add a Resend API key, Supabase service-role key, BTCPay API key, webhook secret or cron secret to Cloudflare Pages. Those belong in Supabase Edge Function Secrets.
 
-After adding or changing environment variables, trigger a new deployment. Vercel applies environment variable changes to new deployments.
+After the first deployment, add `pinkdollmansion.com` under **Workers & Pages → your Pages project → Custom domains**. Cloudflare Pages can provision the website DNS record when the domain is active in the same Cloudflare zone. Add `www.pinkdollmansion.com` as a second custom domain only if you plan to serve it, then create a redirect to your preferred canonical hostname. The included `public/_redirects` file supports the React/TanStack single-page routes on Pages.
 
-### D. Update Supabase Auth URLs
+Update Supabase → Authentication → URL Configuration:
 
-After Vercel gives you a production address (for example `https://your-project.vercel.app`):
+- Site URL: `https://pinkdollmansion.com`
+- Redirect allow-list: `https://pinkdollmansion.com/**`
+- Optional www hostname: `https://www.pinkdollmansion.com/**`
+- Local development: `http://localhost:5173/**`
 
-1. Open Supabase Dashboard → Authentication → URL Configuration.
-2. Set Site URL to your production frontend address.
-3. Add the exact production URL and required callback/redirect paths to the Redirect URLs allowlist.
-4. Keep `http://localhost:5173/**` in the allowlist for local testing.
-5. When you later attach a custom domain, add that domain and its authentication redirect URLs too.
-
-### E. Confirm deployment
-
-1. Open the Vercel deployment URL.
-2. Test the public homepage, gallery, video page, membership page, registration, login, member dashboard and `/admin` owner route.
-3. Test direct refresh on routes such as `/membership`, `/chat` and `/admin`; the included SPA rewrite should return `index.html` for these client-side routes.
-4. Test Supabase email verification and password reset redirects.
-5. Test image and video uploads from Owner Studio after applying migration 003.
-6. Test BTCPay invoice creation and webhook delivery separately; those calls still run on Supabase Edge Functions, not Vercel.
+Cloudflare Pages is the current guide. `vercel.json` and `VERCEL_DEPLOYMENT.md` are legacy deployment files and are not used by Cloudflare Pages.
 
 ## 7. Production checks and limits
 
 - Replace the demonstration Unsplash portraits with images you own or are licensed to use. Use the `VITE_OWNER_*_URL` variables to personalise the homepage without editing React source.
-- Set the real owner display name and tagline in Vercel environment variables.
-- Apply migration 003 before uploading teaser images; otherwise the `preview_storage_path` column and `content-previews` bucket will be missing.
+- Set the real owner display name and tagline in Cloudflare Pages build variables.
+- Apply migrations 003–006 after the first two migrations; they add public-safe previews, owner-managed appearance, restricted media listing, the Pink Doll Mansion palette and email lifecycle support.
 - Keep explicit originals in the private `private-content` bucket and public-safe teaser images in `content-previews` only.
 - Browser-side WebP conversion optimises still images. Video files are validated and uploaded as MP4/WebM/MOV; the browser does not transcode video. Pre-encode large videos to H.264 MP4 before uploading.
 - Large media uploads use TUS resumable upload. Supabase recommends TUS for files larger than 6 MB and uses 6 MB chunks.
@@ -248,7 +206,7 @@ After Vercel gives you a production address (for example `https://your-project.v
 - Audio/video session requests are requests only. Real-time calls require a separate calling provider and credentials.
 - Review privacy, terms, refund, data-protection and age-assurance policies with qualified counsel for the jurisdictions where the site will operate.
 
-For a shorter deployment checklist, see [`VERCEL_DEPLOYMENT.md`](./VERCEL_DEPLOYMENT.md).
+For the email and domain setup, see [`CLOUDFLARE_AND_EMAIL_SETUP.md`](./CLOUDFLARE_AND_EMAIL_SETUP.md).
 
 ## 8. Project structure
 
@@ -270,15 +228,27 @@ supabase/
     202611050001_initial_schema.sql
     202611050002_after_dark_chat_media.sql
     202611070003_content_previews_webp.sql
+    202611070004_owner_managed_site_appearance.sql
+    202611080005_private_content_watermark.sql
+    202611090006_pink_doll_mansion_email_branding.sql
   functions/
+    _shared/email.ts
     create-btc-invoice/index.ts
     btcpay-webhook/index.ts
+    email-lifecycle/index.ts
     get-content-url/index.ts
-vercel.json
+  templates/
+    confirmation.html
+    recovery.html
+    magic_link.html
+    email_change.html
+    invite.html
+    reauthentication.html
+public/_redirects
 ```
 
 ## 9. Verification status
 
-The project files and configuration were reviewed and repaired. The package now includes `tus-js-client`; the upload helper follows Supabase's documented resumable-upload pattern and the 6 MB chunk recommendation. The Vercel SPA rewrite and build settings are included.
+The Pink Doll Mansion project branding, email templates, lifecycle email functions, Cloudflare Pages routing file and setup guide are included. The Supabase migration and Edge Functions still need to be applied/deployed, and the Cloudflare, SMTP and Resend dashboard settings must be entered before email delivery is live.
 
-A full `npm run build` could not be completed in the editing environment because npm dependencies were not installed and the package download timed out. Run `npm install` followed by `npm run build` locally or in Vercel before treating the deployment as production-ready. Do not accept live payments until BTCPay and Supabase end-to-end tests pass.
+A full `npm run build` could not be completed in this editing environment: the npm dependency installation timed out and left an incomplete `node_modules` directory. Run `npm ci` and then `npm run build` locally or in Cloudflare Pages before treating the deployment as production-ready. Test signup confirmation, password reset, Resend welcome, payment settlement and the opted-in reminder/unsubscribe flow before launch.

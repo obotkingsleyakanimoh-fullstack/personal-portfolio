@@ -5,6 +5,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { AuthProvider } from './lib/AuthContext';
 import { router } from './router';
 import './styles.css';
+import './styles-polish.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

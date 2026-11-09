@@ -30,15 +30,15 @@ export interface SiteTheme {
 }
 
 export const defaultSiteTheme: SiteTheme = {
-  primary: '#54253c',
-  accent: '#c17c91',
-  background: '#fbf5f3',
-  surface: '#f1e2e4',
-  text: '#2b1a24',
-  muted: '#907b83',
-  deep: '#321923',
-  highlight: '#d6a0ae',
-  border: '#e8d8dc',
+  primary: '#98506A',
+  accent: '#D79AAA',
+  background: '#F7EFE8',
+  surface: '#FFF9F4',
+  text: '#30212A',
+  muted: '#8E777D',
+  deep: '#291A25',
+  highlight: '#D7B19B',
+  border: '#E8D8D0',
 };
 
 export const fallbackSiteAssets: Record<AssetSlot, SiteAsset> = {

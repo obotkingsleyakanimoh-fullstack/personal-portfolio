@@ -38,25 +38,25 @@
 .owner-order-id{display:flex;flex-direction:column;gap:4px;min-width:0}.owner-order-id small{font-size:7px;color:#94877d;overflow-wrap:anywhere;line-height:1.3}
 
 
-/* AFTER DARK DESIGN DIRECTION — sensual editorial, not cinematic */
-:root{font-family:'Manrope',sans-serif;color:#2b1a24;background:#fbf5f3;--ink:#24151e;--paper:#fbf5f3;--cream:#f1e2e3;--wine:#702b4a;--rose:#c17c91;--brass:#b68b78;--muted:#907b83;--line:rgba(63,31,48,.15)}
-body{background:#fbf5f3;color:#2b1a24}
-.announcement-bar{background:#321923;color:#f7e7e9;letter-spacing:.13em;font-size:8px}
+/* PINK DOLL MANSION DESIGN DIRECTION — soft blush, rose and deep plum */
+:root{font-family:'Manrope',sans-serif;color:#2B1721;background:#FFF7FA;--ink:#24151e;--paper:#FFF7FA;--cream:#f1e2e3;--wine:#702b4a;--rose:#E58BAC;--brass:#b68b78;--muted:#987585;--line:rgba(63,31,48,.15)}
+body{background:#FFF7FA;color:#2B1721}
+.announcement-bar{background:#4A1630;color:#f7e7e9;letter-spacing:.13em;font-size:8px}
 .adult-chip{display:inline-grid;place-items:center;min-width:25px;height:18px;padding:0 5px;border:1px solid #d49eac;border-radius:99px;color:#f2bfce;font-size:8px;font-weight:700;letter-spacing:.08em}
-.site-header{background:#fbf5f3;border-color:#e8d8dc}
+.site-header{background:#FFF7FA;border-color:#F2D5E0}
 .brand-mark{border-color:#b77d91;color:#7b3454}
 .brand-copy>span{font-family:'Cormorant Garamond',serif;font-size:25px;font-weight:600;letter-spacing:.02em}
 .brand-copy small{color:#9a737f;letter-spacing:.16em;font-size:7px}
 .nav-link:after{background:#873d5c}
 .nav-link:hover,.nav-link.active{color:#78304f}
 .button{border-radius:999px;letter-spacing:.06em;font-size:9px;min-height:45px;padding:13px 22px}
-.button-dark{background:#54253c;border-color:#54253c;color:#fff5f6}
+.button-dark{background:#B83268;border-color:#B83268;color:#fff5f6}
 .button-dark:hover{background:#7b3454;border-color:#7b3454}
 .button-cream{background:#f1dfe4;border-color:#f1dfe4;color:#38202c}
 .button-cream:hover{background:#f8e9ec;border-color:#f8e9ec}
 .button-outline-dark{border-radius:999px;border-color:#8f6878;color:#5a3144}
-.button-outline-dark:hover{background:#54253c;color:#fff}
-.hero-section{background:#321923;color:#fff3f4;min-height:630px;height:min(740px,calc(100vh - 110px));grid-template-columns:1.02fr 44%;}
+.button-outline-dark:hover{background:#B83268;color:#fff}
+.hero-section{background:#4A1630;color:#fff3f4;min-height:630px;height:min(740px,calc(100vh - 110px));grid-template-columns:1.02fr 44%;}
 .hero-content{padding-top:95px;padding-bottom:85px}
 .hero-kicker{color:#e2b8c3;letter-spacing:.16em}
 .kicker-line{background:#d89caf}
@@ -73,19 +73,19 @@ body{background:#fbf5f3;color:#2b1a24}
 .hero-image-caption{left:28px;bottom:29px}
 .hero-image-caption strong{font-family:'Cormorant Garamond',serif;font-size:27px}
 .hero-image-caption span{color:#f5dce3}
-.hero-vertical-note{color:#d5acb8}
-.hero-bottom-rule{border-color:#815467;color:#d3abb7}
+.hero-vertical-note{color:#F4BDD0}
+.hero-bottom-rule{border-color:#86516A;color:#d3abb7}
 .section-pad{padding-top:105px;padding-bottom:105px}
-.intro-section{background:#fbf5f3}
+.intro-section{background:#FFF7FA}
 .intro-portrait-wrap{padding:0 20px 20px 0}
 .intro-portrait-wrap:after{border-color:#c997a6}
 .intro-portrait-wrap img{filter:saturate(.88);border-radius:150px 150px 8px 8px}
 .intro-caption{color:#fff1f3}
 .section-heading h2,.intro-copy h2,.page-hero h1,.page-intro h1,.membership-feature-copy h2,.chat-heading h1,.dashboard-welcome h1,.admin-heading h1{font-family:'Cormorant Garamond',serif;letter-spacing:-.025em}
-.section-heading h2 em,.intro-copy h2 em,.about-body-heading h2 em,.video-feature-copy h2 em,.video-list-heading h2 em{color:#8d3c5c;font-style:italic}
-.eyebrow{color:#9b687a;letter-spacing:.17em}
-.intro-copy .eyebrow{color:#9b687a}
-.intro-lead{font-family:'Cormorant Garamond',serif;font-size:24px;color:#533244;line-height:1.43}
+.section-heading h2 em,.intro-copy h2 em,.about-body-heading h2 em,.video-feature-copy h2 em,.video-list-heading h2 em{color:#B83268;font-style:italic}
+.eyebrow{color:#A45B78;letter-spacing:.17em}
+.intro-copy .eyebrow{color:#A45B78}
+.intro-lead{font-family:'Cormorant Garamond',serif;font-size:24px;color:#59243E;line-height:1.43}
 .muted-copy,.section-heading p{color:#87727b}
 .signature{color:#a17a87;font-family:'Cormorant Garamond',serif}
 .signature span{color:#743450}
@@ -102,24 +102,24 @@ body{background:#fbf5f3;color:#2b1a24}
 .locked-mark{border-color:#d7b8c2;color:#7e425a;background:#f9eef0;border-radius:999px;padding:6px 9px}
 .open-label{color:#9a6174}
 .underlined-link{border-color:#b98798;color:#69384f}
-.membership-feature{background:#321923;color:#fff2f4}
+.membership-feature{background:#4A1630;color:#fff2f4}
 .membership-feature-image img{filter:saturate(.88);object-position:center 25%}
-.membership-feature-copy{background:#321923}
+.membership-feature-copy{background:#4A1630}
 .membership-feature-copy h2{font-family:'Cormorant Garamond',serif;font-size:clamp(55px,6.2vw,82px);line-height:.93}
 .membership-feature-copy h2 em{color:#e7aabd;font-style:italic}
 .membership-feature-copy p{color:#e3c8d0}
 .feature-footnote{color:#d7b7c1}
 .connection-section{background:#f9eff0}
 .connection-mark{color:#9a4a6b}
-.page-shell{color:#2b1a24}
+.page-shell{color:#2B1721}
 .page-intro h1,.page-hero h1{font-size:clamp(52px,5.7vw,79px);line-height:.96}
 .page-intro h1 em,.page-hero h1 em,.checkout-main h1 em,.chat-heading h1 em{color:#a04b6b;font-style:italic}
 .page-intro p,.page-hero p{color:#8b737d}
 .filter-chip{border-radius:99px;border-color:#ddc3cc;color:#82566a}
-.filter-chip.selected,.filter-chip:hover{background:#54253c;border-color:#54253c;color:#fff0f4}
+.filter-chip.selected,.filter-chip:hover{background:#B83268;border-color:#B83268;color:#fff0f4}
 .video-feature-card{background:#f2e4e8;border-color:#e5ccd4;border-radius:12px;overflow:hidden}
 .video-feature-image img{filter:saturate(.9)}
-.video-feature-overlay{background:linear-gradient(0deg,#3219238c,transparent 70%)}
+.video-feature-overlay{background:linear-gradient(0deg,#4A16308c,transparent 70%)}
 .video-feature-copy h2{font-family:'Cormorant Garamond',serif}
 .video-feature-copy p{color:#866d78}
 .plan-card{background:#fff9f8;border-color:#e8d4da;border-radius:14px;box-shadow:0 12px 35px #4e20300a}
@@ -251,7 +251,7 @@ body{background:#fbf5f3;color:#2b1a24}
 @media(max-width:760px){.media-upload-progress{max-width:100%}.media-upload-progress small{min-width:76px}}
 
 /* Owner-managed appearance theme. Values are supplied by the site_appearance table. */
-:root{--site-primary:#54253c;--site-accent:#c17c91;--site-background:#fbf5f3;--site-surface:#f1e2e4;--site-text:#2b1a24;--site-muted:#907b83;--site-deep:#321923;--site-highlight:#d6a0ae;--site-border:#e8d8dc;--ink:var(--site-text);--paper:var(--site-background);--cream:var(--site-surface);--wine:var(--site-primary);--rose:var(--site-accent);--brass:var(--site-highlight);--muted:var(--site-muted);--line:var(--site-border)}
+:root{--site-primary:#B83268;--site-accent:#E58BAC;--site-background:#FFF7FA;--site-surface:#FCE7EF;--site-text:#2B1721;--site-muted:#987585;--site-deep:#4A1630;--site-highlight:#F4BDD0;--site-border:#F2D5E0;--ink:var(--site-text);--paper:var(--site-background);--cream:var(--site-surface);--wine:var(--site-primary);--rose:var(--site-accent);--brass:var(--site-highlight);--muted:var(--site-muted);--line:var(--site-border)}
 html,body{background:var(--site-background);color:var(--site-text)}
 .site-header{background:var(--site-background)!important;border-color:var(--site-border)!important}
 .site-header-inner,.mobile-nav-panel{background:var(--site-background)}

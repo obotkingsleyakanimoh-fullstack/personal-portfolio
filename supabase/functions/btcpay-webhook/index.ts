@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { emailLayout, escapeHtml, getPublicTeaser, sendEmailOnce } from '../_shared/email.ts';
 
 function toHex(buffer: ArrayBuffer) {
   return Array.from(new Uint8Array(buffer)).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -15,6 +16,40 @@ async function verifySignature(rawBody: string, signature: string | null, secret
   let mismatch = 0;
   for (let i = 0; i < a.length; i++) mismatch |= a[i] ^ b[i];
   return mismatch === 0;
+}
+
+async function sendMembershipThankYou(admin: any, order: Record<string, any>) {
+  if (order.product_type !== 'membership' || !order.user_id) return;
+  try {
+    const [{ data: authData }, { data: profile }, { data: membership }, { data: plan }, teaser] = await Promise.all([
+      admin.auth.admin.getUserById(order.user_id),
+      admin.from('profiles').select('full_name').eq('id', order.user_id).maybeSingle(),
+      admin.from('memberships').select('ends_at,starts_at').eq('payment_order_id', order.id).maybeSingle(),
+      admin.from('membership_plans').select('name').eq('id', order.plan_id).maybeSingle(),
+      getPublicTeaser(admin),
+    ]);
+    const user = authData?.user;
+    if (!user?.email || !membership) return;
+    const firstName = String(profile?.full_name || user.user_metadata?.full_name || '').trim().split(/\s+/)[0];
+    const endDate = membership.ends_at ? new Date(membership.ends_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : 'your account dashboard';
+    const planName = String(plan?.name || 'your selected membership');
+    const html = emailLayout({
+      preheader: 'Your Pink Doll Mansion membership payment is confirmed.',
+      eyebrow: 'MEMBERSHIP ACTIVATED',
+      title: firstName ? `Thank you, ${firstName}.` : 'Your private access is ready.',
+      intro: `Your Bitcoin payment has been verified and ${planName} membership is now active. Your access is attached to your Pink Doll Mansion account.`,
+      bodyHtml: `<div style=\"margin:22px 0;padding:18px;background:#fff7fa;border:1px solid #f2d5e0;border-radius:14px\"><div style=\"font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#987585\">YOUR MEMBERSHIP</div><div style=\"margin-top:7px;font-family:Georgia,serif;font-size:22px;color:#4a1630\">${escapeHtml(planName)}</div><div style=\"margin-top:7px;font-size:13px;color:#765666\">Access through ${endDate}</div></div><p style=\"font-size:14px;line-height:1.8;color:#765666;margin:18px 0 0\">You can now open the collections included in your membership and manage your account from your private dashboard. Please keep your sign-in details to yourself.</p>`,
+      imageUrl: teaser.url,
+      imageAlt: teaser.title ? `Public preview: ${teaser.title}` : 'A public preview from Pink Doll Mansion',
+      buttonUrl: 'https://pinkdollmansion.com/dashboard',
+      buttonText: 'Enter your private dashboard',
+      footerNote: 'This is a transactional payment and membership confirmation. Your membership does not renew automatically.',
+    });
+    const result = await sendEmailOnce(admin, { userId: order.user_id, eventKey: `membership_thank_you_${order.id}`, to: user.email, subject: 'Your Pink Doll Mansion membership is active', html });
+    if (!result.sent && !result.alreadySent) console.error('Membership confirmation email failed:', result.error);
+  } catch (error) {
+    console.error('Membership confirmation email error:', error);
+  }
 }
 
 Deno.serve(async (req) => {
@@ -82,7 +117,10 @@ Deno.serve(async (req) => {
     return new Response('Event recorded; no access granted', { status: 200 });
   }
 
-  if (order.fulfillment_applied) return new Response('Already fulfilled', { status: 200 });
+  if (order.fulfillment_applied) {
+    await sendMembershipThankYou(admin, order); // retries a previously failed receipt without granting access again
+    return new Response('Already fulfilled', { status: 200 });
+  }
   const { data: claimed, error: claimError } = await admin.rpc('claim_payment_fulfillment', { order_uuid: order.id });
   if (claimError) return new Response('Could not claim payment fulfilment', { status: 500 });
   if (!claimed) return new Response('Fulfilment is already being processed', { status: 200 });
@@ -105,7 +143,7 @@ Deno.serve(async (req) => {
 
   const now = new Date();
   if (order.product_type === 'membership' && order.plan_id) {
-    const { data: plan, error: planError } = await admin.from('membership_plans').select('duration_days,can_chat').eq('id', order.plan_id).single();
+    const { data: plan, error: planError } = await admin.from('membership_plans').select('duration_days,can_chat,name').eq('id', order.plan_id).single();
     if (planError || !plan) { await admin.from('payment_orders').update({ fulfillment_claimed_at: null }).eq('id', order.id); return new Response('Membership plan missing', { status: 500 }); }
     const { data: currentMembership } = await admin.from('memberships').select('ends_at').eq('user_id', order.user_id).eq('status', 'active').gt('ends_at', now.toISOString()).order('ends_at', { ascending: false }).limit(1).maybeSingle();
     const startsAt = currentMembership?.ends_at && new Date(currentMembership.ends_at).getTime() > now.getTime() ? new Date(currentMembership.ends_at) : now;
@@ -127,5 +165,6 @@ Deno.serve(async (req) => {
 
   await admin.from('payment_orders').update({ status: 'confirmed', confirmed_at: now.toISOString(), fulfillment_applied: true, transaction_id: String(event.paymentId || '') || null }).eq('id', order.id);
   await admin.from('payment_events').update({ processed_at: now.toISOString() }).eq('provider_event_id', deliveryId);
+  if (order.product_type === 'membership') await sendMembershipThankYou(admin, order);
   return new Response('Payment verified and access granted', { status: 200 });
 });

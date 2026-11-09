@@ -1,0 +1,57 @@
+PINK DOLL MANSION — LUXURY UI REFRESH
+====================================
+
+This is a focused UI patch for the Pink Doll Mansion project. It is based on
+Pink-Doll-Mansion-Cloudflare-Email-Update.zip and retains the existing backend,
+Supabase Auth, membership, BTCPay, email lifecycle, protected media, chat and
+Owner Studio logic.
+
+FILES TO REPLACE (preserve the folder paths):
+  index.html
+  public/favicon.svg
+  src/main.tsx
+  src/pages/Pages.tsx
+  src/lib/siteSettings.ts
+
+NEW FILE TO ADD:
+  src/styles-polish.css
+
+OPTIONAL DATABASE THEME UPDATE:
+  supabase/migrations/202611090007_pink_doll_mansion_luxury_theme.sql
+
+The SQL updates the theme only when the stored palette exactly matches one of
+the known starter palettes. It does not overwrite a custom palette saved by
+the owner. If you use Supabase migrations, apply it after migration 006.
+Do not rerun the original schema SQL or the email migration just for this UI
+patch. No database change is needed for the CSS itself; the migration only
+updates the saved colours when they still match a starter palette.
+
+DEPLOY CHECK:
+  npm ci
+  npm run build
+
+Then deploy the resulting build using your current Cloudflare deployment
+workflow. No new environment variables or third-party services are required.
+
+WHAT CHANGED:
+- Warm champagne/nude, rose-blush and deep-plum design system.
+- More editorial homepage with portrait framing and a three-pillar experience
+  section.
+- Redesigned login, registration and password-reset presentation.
+- Consistent styling for gallery cards, membership tiers, checkout, dashboard,
+  chat, account settings, legal pages and Owner Studio.
+- Improved mobile layout, focus states and reduced-motion handling.
+- Updated page title, social metadata, theme-color and monogram favicon.
+
+FUNCTIONALITY:
+This patch changes presentation and a small amount of static homepage/auth
+copy only. It does not intentionally change form state, authentication calls,
+password reset behavior, marketing opt-in, age confirmation, database access,
+payment processing, BTCPay webhooks, membership entitlement rules, protected
+media delivery, chat operations or administration actions.
+
+VALIDATION NOTE:
+TypeScript/JSX syntax checks and CSS parsing completed successfully in the
+preparation environment. A full Vite production build could not be completed
+because dependency installation could not reach the configured npm registry.
+Run the build locally before deploying.

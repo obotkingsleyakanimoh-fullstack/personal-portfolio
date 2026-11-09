@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = async () => {
     if (!supabase || !session?.user) { setProfile(null); return; }
-    const { data } = await supabase.from('profiles').select('id,full_name,username,avatar_url,role,status,created_at').eq('id', session.user.id).maybeSingle();
+    const { data } = await supabase.from('profiles').select('id,full_name,username,avatar_url,role,status,created_at,marketing_opt_in').eq('id', session.user.id).maybeSingle();
     setProfile((data as Profile | null) ?? null);
   };
 
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!alive) return;
       setSession(data.session);
       if (data.session?.user) {
-        const { data: p } = await client.from('profiles').select('id,full_name,username,avatar_url,role,status,created_at').eq('id', data.session.user.id).maybeSingle();
+        const { data: p } = await client.from('profiles').select('id,full_name,username,avatar_url,role,status,created_at,marketing_opt_in').eq('id', data.session.user.id).maybeSingle();
         if (alive) setProfile((p as Profile | null) ?? null);
       }
       if (alive) setLoading(false);
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       else {
         window.setTimeout(async () => {
           if (!alive) return;
-          const { data: p } = await client.from('profiles').select('id,full_name,username,avatar_url,role,status,created_at').eq('id', next.user.id).maybeSingle();
+          const { data: p } = await client.from('profiles').select('id,full_name,username,avatar_url,role,status,created_at,marketing_opt_in').eq('id', next.user.id).maybeSingle();
           if (alive) { setProfile((p as Profile | null) ?? null); setLoading(false); }
         }, 0);
       }

@@ -313,8 +313,8 @@ END $$;
 insert into public.membership_plans (name, slug, description, price_amount, currency, duration_days, access_tier, can_chat, benefits, featured, sort_order)
 values
   ('The Tease', 'the-tease', 'A first look at the private side: intimate portraits and selected behind-the-scenes moments.', 12, 'USD', 30, 1, false, array['Members-only intimate picture sets','New private pictures throughout the month','Personal updates and behind-the-scenes notes'], false, 1),
-  ('After Dark', 'after-dark', 'A more intimate collection of private pictures, adult videos and personal conversation.', 29, 'USD', 30, 2, true, array['Everything in The Tease','Selected exclusive adult videos','Private text, photo and voice-note chat','Early access to new intimate collections'], true, 2),
-  ('The Private Suite', 'private-suite', 'The most personal access, with VIP collections and priority private interaction.', 69, 'USD', 30, 3, true, array['Everything in After Dark','VIP intimate picture and video collections','Priority one-to-one text, photo and voice messages','Priority requests for private audio or video sessions'], false, 3)
+  ('The Mansion', 'the-mansion', 'A deeper look inside Pink Doll Mansion, with private boudoir photography, intimate films and personal conversation.', 29, 'USD', 30, 2, true, array['Everything in The Tease','Selected private films','Private text, photo and voice-note chat','Early access to new intimate collections'], true, 2),
+  ('The Private Suite', 'private-suite', 'The most personal access, with VIP collections and priority private interaction.', 69, 'USD', 30, 3, true, array['Everything in The Mansion','VIP intimate picture and video collections','Priority one-to-one text, photo and voice messages','Priority requests for private audio or video sessions'], false, 3)
 on conflict (slug) do nothing;
 
 -- Row-level security
