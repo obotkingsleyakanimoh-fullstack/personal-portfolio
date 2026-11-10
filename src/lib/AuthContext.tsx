@@ -45,10 +45,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(next);
       if (!next) { setProfile(null); setLoading(false); }
       else {
+        // Run profile/email work outside the synchronous auth callback. OAuth
+        // creates a Supabase user without an email-confirmation detour; when
+        // that new account returns here, send the same Resend welcome used by
+        // email/password registration. The delivery log makes this idempotent.
         window.setTimeout(async () => {
           if (!alive) return;
           const { data: p } = await client.from('profiles').select('id,full_name,username,avatar_url,role,status,created_at,marketing_opt_in').eq('id', next.user.id).maybeSingle();
           if (alive) { setProfile((p as Profile | null) ?? null); setLoading(false); }
+
+          {
+            const createdAt = Date.parse(next.user.created_at);
+            const accountIsNew = Number.isFinite(createdAt) && Date.now() >= createdAt - 60_000 && Date.now() - createdAt <= 45 * 60 * 1000;
+            if (accountIsNew) {
+              // The registration button stores this short-lived consent before
+              // leaving for Google. Existing Google accounts are not forced to
+              // re-consent and their marketing preference is never switched off.
+              try {
+                const rawIntent = window.sessionStorage.getItem('pdm-google-signup-intent');
+                if (rawIntent) {
+                  const intent = JSON.parse(rawIntent) as { createdAt?: number; adultConfirmed?: boolean; marketingOptIn?: boolean };
+                  const intentIsFresh = typeof intent.createdAt === 'number' && Date.now() - intent.createdAt < 15 * 60 * 1000;
+                  if (intentIsFresh && intent.adultConfirmed === true) {
+                    const updates: { adult_confirmed_at: string; marketing_opt_in?: boolean; full_name?: string } = {
+                      adult_confirmed_at: new Date().toISOString(),
+                    };
+                    if (intent.marketingOptIn === true) updates.marketing_opt_in = true;
+                    const fullName = String(next.user.user_metadata?.full_name || next.user.user_metadata?.name || '').trim();
+                    if (fullName) updates.full_name = fullName;
+                    await client.from('profiles').update(updates).eq('id', next.user.id);
+                  }
+                  window.sessionStorage.removeItem('pdm-google-signup-intent');
+                }
+              } catch (intentError) {
+                console.warn('Could not apply Google signup preferences:', intentError);
+              }
+              try {
+                const { error: welcomeError } = await client.functions.invoke('email-lifecycle', {
+                  body: { action: 'signup_welcome', userId: next.user.id },
+                });
+                if (welcomeError) console.warn('Google account was created, but its welcome email could not be sent:', welcomeError);
+              } catch (welcomeError) {
+                console.warn('Google account was created, but the welcome email request failed:', welcomeError);
+              }
+            }
+          }
         }, 0);
       }
     });

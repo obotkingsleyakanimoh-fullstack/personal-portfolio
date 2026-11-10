@@ -41,8 +41,7 @@ export function SiteLayout() {
       <header className="site-header">
         <div className="site-header-inner">
           <Link to="/" className="brand-lockup" aria-label={`${siteName} home`}>
-            <span className="brand-mark">P</span>
-            <span className="brand-copy"><span>{siteName}</span><small>THE PRIVATE MANSION · 18+</small></span>
+            <img className="brand-logo-image" src="/logo.svg" alt="Pink Doll Mansion" />
           </Link>
           <nav className="desktop-nav" aria-label="Main navigation">
             {publicLinks.map((item) => (
@@ -86,7 +85,7 @@ export function SiteLayout() {
       <footer className="site-footer">
         <div className="footer-top">
           <div className="footer-brand-block">
-            <Link to="/" className="brand-lockup footer-brand"><span className="brand-mark">P</span><span className="brand-copy"><span>{siteName}</span><small>THE PRIVATE MANSION · 18+</small></span></Link>
+            <Link to="/" className="brand-lockup footer-brand"><img className="brand-logo-image footer-logo-image" src="/logo.svg" alt="Pink Doll Mansion" /></Link>
             <p>Pink Doll Mansion is a private, adults-only collection of sensual portraits, boudoir photography, artistic imagery and personal experiences, shared by choice and with care.</p>
           </div>
           <div className="footer-column"><span className="footer-heading">Explore my world</span><Link to="/about">The story</Link><Link to="/gallery">Gallery</Link><Link to="/videos">Private videos</Link><Link to="/membership">Membership</Link></div>

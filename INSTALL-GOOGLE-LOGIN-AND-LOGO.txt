@@ -1,0 +1,52 @@
+PINK DOLL MANSION — LOGO + GOOGLE SIGN-IN + WELCOME EMAIL
+
+WHAT IS INCLUDED
+- Updated Pink Doll Mansion logo (public/logo.svg and public/logo.png).
+- Updated favicon and social preview metadata.
+- Google sign-in / create-account button on the existing Login / Register page.
+- Supabase Google OAuth consent migration (migration 008).
+- First-time Google accounts trigger the same one-time Resend welcome email as email/password registrations.
+- Google welcome email copy does not tell the user to look for a separate confirmation link.
+- Existing email/password login, confirmation, reset-password, memberships, BTCPay checkout, private content and Owner Studio flows remain in place.
+- Cloudflare SPA configuration and the non-looping empty public/_redirects file remain included.
+
+INSTALL THE PROJECT
+1. Extract this project over your current Pink Doll Mansion repository, keeping the folder structure.
+2. Do not copy node_modules or dist from another machine. Run npm ci.
+3. Run npm run build.
+4. Commit and push to GitHub. Cloudflare should use npm run build, output directory dist, and npx wrangler deploy.
+
+ENABLE GOOGLE OAUTH
+1. In Google Cloud Console, create an OAuth Client ID of type Web application.
+2. Add JavaScript origins:
+   https://pinkdollmansion.com
+   https://www.pinkdollmansion.com
+   http://localhost:5173  (development only)
+3. Add this exact authorized redirect URI:
+   https://ydwqnlovmhtwgbnxeoci.supabase.co/auth/v1/callback
+4. In Supabase > Authentication > Sign In / Providers > Google, enable Google and paste the Client ID and Client Secret.
+5. In Supabase > Authentication > URL Configuration, set Site URL to:
+   https://pinkdollmansion.com
+   Ensure these are allowed redirect URLs:
+   https://pinkdollmansion.com/**
+   https://www.pinkdollmansion.com/**
+   http://localhost:5173/**
+6. In Google Auth Platform, set up the consent screen and add pinkdollmansion.com as an authorized domain if requested. While the app is in Testing, add test users. Publish it for public access when ready.
+7. Never put the Google Client Secret in the frontend, .env VITE variables, GitHub or wrangler.jsonc.
+
+WELCOME EMAIL
+1. Apply only migration 008 after migrations 001–007 are already installed:
+   supabase/migrations/202611100008_google_oauth_signup_consent.sql
+2. Ensure Supabase Edge Function secrets include RESEND_API_KEY and EMAIL_FROM.
+   EMAIL_FROM=Pink Doll Mansion <hello@pinkdollmansion.com>
+3. Deploy the updated Edge Function:
+   supabase functions deploy email-lifecycle --no-verify-jwt
+4. Use a fresh Google account to test new registration. Check that the user returns to the site and receives exactly one welcome email at that Google account's email address.
+5. Sign in again with the same Google account. No second welcome email should be sent.
+6. Test email/password registration separately to confirm that the Supabase confirmation email and Resend welcome email still arrive.
+
+IMPORTANT PRIVACY NOTE
+This is Google OAuth sign-in, not Gmail inbox integration. Pink Doll Mansion asks Google only for identity information needed to authenticate the user (email and basic profile). It does not read the user's Gmail inbox, messages, contacts or send-mail permissions. Resend sends the welcome email to the email address supplied by Supabase Auth.
+
+BUILD STATUS
+This package was syntax-checked, but a complete local npm build could not be run because dependency installation timed out in this environment. Run npm ci and npm run build locally or let Cloudflare run its clean dependency install before deploying.

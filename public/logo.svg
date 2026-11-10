@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 250" role="img" aria-labelledby="title desc">
+  <title id="title">Pink Doll Mansion</title>
+  <desc id="desc">An elegant crowned rose emblem and Pink Doll Mansion wordmark in blush, rose and champagne gold.</desc>
+  <defs>
+    <linearGradient id="rose" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#D69AA9"/><stop offset=".45" stop-color="#B86783"/><stop offset="1" stop-color="#823D5B"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#DCC397"/><stop offset=".48" stop-color="#B78B5D"/><stop offset="1" stop-color="#8F6745"/>
+    </linearGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#B96783"/><stop offset=".55" stop-color="#994B69"/><stop offset="1" stop-color="#71364F"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.1"/></filter>
+  </defs>
+  <g transform="translate(12 8)">
+    <circle cx="112" cy="112" r="102" fill="none" stroke="url(#gold)" stroke-width="2.2"/>
+    <circle cx="112" cy="112" r="92" fill="none" stroke="url(#rose)" stroke-width="1.25" stroke-dasharray="1.4 6"/>
+    <path d="M43 179V100a69 69 0 0 1 138 0v79" fill="none" stroke="url(#gold)" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M58 179v-77a54 54 0 0 1 108 0v77" fill="none" stroke="url(#rose)" stroke-width="2" stroke-linecap="round"/>
+    <path d="M79 179v-34h66v34M91 145v-20h42v20" fill="none" stroke="url(#gold)" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M82 61l8-22 19 13 19-13 8 22" fill="none" stroke="url(#gold)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="82" cy="60" r="3.4" fill="url(#gold)"/><circle cx="109" cy="51" r="3.8" fill="url(#rose)"/><circle cx="136" cy="60" r="3.4" fill="url(#gold)"/>
+    <path d="M110 73c-15 0-27 12-27 27 0 8 4 15 10 20-4 5-6 11-5 18 1 9 9 16 22 19 13-3 21-10 22-19 1-7-1-13-5-18 6-5 10-12 10-20 0-15-12-27-27-27Z" fill="none" stroke="url(#rose)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M96 111c6 3 12 3 18 0 4-2 8-5 11-9M100 132c6 3 14 3 20-1" fill="none" stroke="url(#gold)" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M35 112H21m182 0h-14M112 8V0m0 224v-10" stroke="url(#gold)" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M112 192c-13-11-27-22-27-35 0-9 7-15 16-15 5 0 9 3 11 7 3-4 7-7 12-7 9 0 16 6 16 15 0 13-14 24-28 35Z" fill="none" stroke="url(#rose)" stroke-width="1.8"/>
+    <path d="M112 9l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="url(#gold)"/>
+  </g>
+  <g transform="translate(252 30)">
+    <text x="0" y="92" fill="url(#word)" stroke="#F8DFE5" stroke-opacity=".18" stroke-width=".6" font-family="'Cormorant Garamond', 'Palatino Linotype', Georgia, serif" font-size="91" font-style="italic" font-weight="600" letter-spacing="-1.6">Pink Doll</text>
+    <path d="M6 120h526" stroke="url(#gold)" stroke-width="1.1"/>
+    <path d="M266 116l4 4-4 4-4-4z" fill="url(#rose)"/>
+    <text x="7" y="174" fill="url(#gold)" font-family="'Cormorant Garamond', Georgia, serif" font-size="51" font-weight="500" letter-spacing="18">MANSION</text>
+    <path d="M214 198c18-14 32-14 47 0 15-14 29-14 47 0" fill="none" stroke="url(#rose)" stroke-width="1.7" stroke-linecap="round"/>
+    <text x="7" y="220" fill="#9D7785" font-family="Manrope, Arial, sans-serif" font-size="11.5" font-weight="600" letter-spacing="5.3">THE PRIVATE EDITION  ·  18+</text>
+  </g>
+</svg>

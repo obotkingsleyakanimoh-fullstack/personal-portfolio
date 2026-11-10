@@ -1,12 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="silk" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f6e6de"/>
-      <stop offset="1" stop-color="#d7aaa5"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="19" fill="#291a25"/>
-  <circle cx="32" cy="32" r="25" fill="none" stroke="url(#silk)" stroke-width="1.2"/>
-  <circle cx="32" cy="32" r="21.5" fill="none" stroke="#b8838c" stroke-opacity=".45" stroke-width=".7"/>
-  <text x="32" y="44" text-anchor="middle" font-family="Georgia,serif" font-size="35" font-style="italic" fill="#f5d7d4">P</text>
+<defs><linearGradient id="r" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F7D4DC"/><stop offset="1" stop-color="#9D4C70"/></linearGradient><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFF0CF"/><stop offset="1" stop-color="#A8794C"/></linearGradient></defs>
+<rect x="2" y="2" width="60" height="60" rx="18" fill="#291A25" stroke="url(#g)" stroke-width="1.5"/>
+<path d="M19 25l4-11 9 7 9-7 4 11" fill="none" stroke="url(#g)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="19" cy="25" r="2" fill="url(#g)"/><circle cx="32" cy="21" r="2.3" fill="url(#r)"/><circle cx="45" cy="25" r="2" fill="url(#g)"/>
+<path d="M14 48V34a18 18 0 0 1 36 0v14M19 48V34a13 13 0 0 1 26 0v14" fill="none" stroke="url(#r)" stroke-width="1.8" stroke-linecap="round"/>
+<text x="32" y="46" text-anchor="middle" fill="#FFF0CF" font-family="Georgia,serif" font-size="17" font-style="italic">P</text>
 </svg>

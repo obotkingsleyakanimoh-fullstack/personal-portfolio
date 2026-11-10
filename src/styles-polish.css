@@ -792,3 +792,18 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
 @media (prefers-reduced-motion: reduce) {
   *, *:before, *:after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+/* Pink Doll Mansion brand mark and social sign-in */
+.brand-logo-image { display:block; width:clamp(164px, 17vw, 212px); height:auto; max-height:70px; object-fit:contain; }
+.footer-logo-image { width:205px; max-height:76px; }
+.auth-brand-logo { display:block; width:min(260px, 76%); height:auto; margin:0 0 28px; }
+.auth-social-divider { display:flex; align-items:center; gap:14px; margin:22px 0 14px; color:#9d838d; font-size:9px; letter-spacing:.17em; }
+.auth-social-divider::before, .auth-social-divider::after { content:""; flex:1; height:1px; background:rgba(113,63,83,.19); }
+.google-auth-button { width:100%; min-height:52px; display:flex; align-items:center; justify-content:center; gap:13px; padding:13px 18px; border:1px solid #e5d8dc; border-radius:3px; background:#fffdfa; color:#352633; font-size:11px; font-weight:700; letter-spacing:.025em; box-shadow:0 7px 20px rgba(73,33,52,.045); transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.google-auth-button:hover:not(:disabled) { transform:translateY(-1px); border-color:#cf9cae; box-shadow:0 12px 26px rgba(73,33,52,.09); }
+.google-auth-button:disabled { opacity:.62; cursor:wait; }
+.google-mark { width:19px; height:19px; flex:0 0 19px; }
+.google-auth-button > svg:last-child { margin-left:auto; color:#987888; }
+.google-auth-note { margin:10px 0 0; color:#9b8790; font-size:9px; line-height:1.65; text-align:center; }
+@media (max-width:760px) { .brand-logo-image { width:164px; max-height:58px; } .footer-logo-image { width:190px; } .auth-brand-logo { width:220px; margin-top:12px; } }

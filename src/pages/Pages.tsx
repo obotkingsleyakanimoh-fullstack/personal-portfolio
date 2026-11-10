@@ -17,6 +17,13 @@ import { defaultSiteTheme, loadingSiteAssets, siteAssetSlots, useSiteAssets, use
 
 
 function SectionEyebrow({ children }: { children: ReactNode }) { return <div className="eyebrow"><span />{children}</div>; }
+function canonicalAuthRedirect(path: string) {
+  const hostname = window.location.hostname.toLowerCase();
+  const isProductionDomain = hostname === 'pinkdollmansion.com' || hostname === 'www.pinkdollmansion.com';
+  const origin = isProductionDomain ? 'https://pinkdollmansion.com' : window.location.origin;
+  return `${origin}${path}`;
+}
+function GoogleMark() { return <svg className="google-mark" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z" transform="translate(0 3)"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.74 7.18l7.65 5.94c4.47-4.13 7.13-10.2 7.13-17.59Z"/><path fill="#FBBC05" d="M10.53 28.59a14.4 14.4 0 0 1 0-9.18l-7.98-6.19a23.9 23.9 0 0 0 0 21.56l7.98-6.19Z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.86l-7.65-5.94c-2.13 1.43-4.86 2.27-8.25 2.27-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z"/></svg>; }
 function SectionHeading({ eyebrow, title, description, align = 'left' }: { eyebrow: string; title: ReactNode; description?: string; align?: 'left' | 'center' }) {
   return <div className={`section-heading ${align === 'center' ? 'center' : ''}`}><SectionEyebrow>{eyebrow}</SectionEyebrow><h2>{title}</h2>{description && <p>{description}</p>}</div>;
 }
@@ -263,12 +270,59 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(() => new URLSearchParams(window.location.search).has('confirmed') ? 'Your email is confirmed. Sign in to enter Pink Doll Mansion.' : '');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(() => {
+    const query = new URLSearchParams(window.location.search);
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    return query.get('error_description') || hash.get('error_description') || '';
+  });
   useEffect(() => {
     if (user && mode !== 'reset') {
       navigate({ to: new URLSearchParams(window.location.search).get('next') || '/dashboard' } as never);
     }
   }, [user, mode]);
+  const startGoogleAuth = async () => {
+    setError(''); setMessage('');
+    if (!supabase || !configured) {
+      setError('Google sign-in is not ready because Supabase is not connected.');
+      return;
+    }
+    const ageGateAccepted = (() => {
+      try { return window.localStorage.getItem('atelier-adult-entry') === 'accepted'; }
+      catch { return false; }
+    })();
+    if (mode === 'register' && !adultConfirmed) {
+      setError('Confirm that you are at least 18 before creating an account with Google.');
+      return;
+    }
+    if (mode === 'login' && !ageGateAccepted) {
+      setError('Please confirm the 18+ entry notice before continuing with Google.');
+      return;
+    }
+    try {
+      window.sessionStorage.setItem('pdm-google-signup-intent', JSON.stringify({
+        createdAt: Date.now(),
+        adultConfirmed: mode === 'register' ? adultConfirmed : ageGateAccepted,
+        marketingOptIn: mode === 'register' && marketingOptIn,
+      }));
+    } catch {
+      setError('Your browser could not save the signup confirmation. Please allow session storage and try again.');
+      return;
+    }
+    setLoading(true);
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: canonicalAuthRedirect('/login?oauth=google'),
+        queryParams: { prompt: 'select_account' },
+      },
+    });
+    if (oauthError) {
+      try { window.sessionStorage.removeItem('pdm-google-signup-intent'); } catch { /* Ignore storage cleanup errors. */ }
+      setLoading(false);
+      setError(oauthError.message);
+    }
+  };
+
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setError(''); setMessage('');
     if (!supabase || !configured) { setError('Supabase is not connected yet. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your environment.'); return; }
@@ -280,7 +334,7 @@ export function LoginPage() {
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) setError(updateError.message); else { setMessage('Your password has been updated.'); setMode('login'); navigate({ to: '/dashboard' }); }
     } else if (mode === 'register') {
-      const { data, error: authError } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name, username, marketing_opt_in: marketingOptIn }, emailRedirectTo: `${window.location.origin}/login?confirmed=1` } });
+      const { data, error: authError } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name, username, marketing_opt_in: marketingOptIn, adult_confirmed_at: new Date().toISOString() }, emailRedirectTo: canonicalAuthRedirect('/login?confirmed=1') } });
       if (authError) setError(authError.message);
       else {
         if (data.user?.id) {
@@ -307,7 +361,7 @@ export function LoginPage() {
     }
     setLoading(false);
   };
-  return <div className="auth-page"><div className="auth-visual"><SiteArtwork asset={assets.auth_hero} alt="Personal portrait"/><div className="auth-visual-shade"/><div className="auth-visual-copy"><span>THE PRIVATE EDITION · MEMBERS 18+</span><h2>A little mystery.<br /><em>A lot more personal.</em></h2><p>Sensual portraits, intimate films and private moments — curated and shared on my terms.</p></div><div className="auth-edition-badge"><strong>18+</strong><span>THE PINK EDITION</span></div><div className="auth-visual-bottom">PERSONAL <span>✦</span> PRIVATE <span>✦</span> ALWAYS BY CHOICE</div></div><div className="auth-form-panel"><div className="auth-form-inner"><Link to="/" className="auth-back"><ArrowLeft size={14}/> Return to the website</Link><div className="auth-monogram">P</div><SectionEyebrow>A PRIVATE INVITATION</SectionEyebrow><h1>{mode === 'login' ? 'Your world awaits.' : mode === 'register' ? 'Come a little closer.' : 'A fresh start.'}</h1><p className="auth-subtitle">{mode === 'login' ? 'Sign in to return to your private corner of the mansion.' : mode === 'register' ? 'Create your private account and discover the collections, films and conversations waiting inside.' : 'Choose a new password for your Pink Doll Mansion account.'}</p>{mode !== 'reset' && <div className="auth-tabs"><button onClick={() => { setMode('login'); setError(''); setMessage(''); }} className={mode === 'login' ? 'active' : ''}>Sign in</button><button onClick={() => { setMode('register'); setError(''); setMessage(''); }} className={mode === 'register' ? 'active' : ''}>Create account</button></div>}<form onSubmit={submit} className="auth-form">{mode === 'register' && <><label>Full name<input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" required autoComplete="name"/></label><label>Username<input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose your private username" required autoComplete="username"/></label><label className="adult-consent-check signup-age-check"><input type="checkbox" checked={adultConfirmed} onChange={(e) => setAdultConfirmed(e.target.checked)}/><span>I confirm that I am at least 18 years old and legally allowed to access adult-oriented content where I live.</span></label><label className="adult-consent-check signup-age-check"><input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)}/><span>Send me occasional Pink Doll Mansion updates and membership reminders. I can unsubscribe at any time.</span></label></>}{mode !== 'reset' && <label>Email address<div className="field-with-icon"><Mail size={16}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required autoComplete="email"/></div></label>}<label>Password<div className="field-with-icon password-field"><input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" required autoComplete={mode === 'login' ? 'current-password' : 'new-password'}/><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label="Toggle password visibility">{showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}</button></div></label>{mode === 'reset' && <label>Confirm new password<input type={showPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat your new password" required autoComplete="new-password"/></label>}{mode === 'login' && <div className="auth-forgot"><button type="button" onClick={async () => { if (!supabase || !email) { setError('Enter your email address first.'); return; } const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/login?type=recovery` }); if (resetError) setError(resetError.message); else setMessage('Password reset instructions have been sent if the account exists.'); }}>Forgot password?</button></div>}<button className="button button-dark auth-submit" disabled={loading}>{loading ? 'Please wait…' : mode === 'login' ? 'Sign in to your account' : mode === 'register' ? 'Create my account' : 'Update password'} <ArrowUpRight size={15}/></button></form>{error && <div className="inline-error">{error}</div>}{message && <div className="inline-success"><CheckCircle2 size={16}/>{message}</div>}<div className="auth-privacy"><ShieldCheck size={14}/> Your account and conversations are private.</div><p className="auth-legal">By continuing, you agree to our <Link to="/terms">Terms</Link> and <Link to="/privacy">Privacy Policy</Link>.</p></div></div></div>;
+  return <div className="auth-page"><div className="auth-visual"><SiteArtwork asset={assets.auth_hero} alt="Personal portrait"/><div className="auth-visual-shade"/><div className="auth-visual-copy"><span>THE PRIVATE EDITION · MEMBERS 18+</span><h2>A little mystery.<br /><em>A lot more personal.</em></h2><p>Sensual portraits, intimate films and private moments — curated and shared on my terms.</p></div><div className="auth-edition-badge"><strong>18+</strong><span>THE PINK EDITION</span></div><div className="auth-visual-bottom">PERSONAL <span>✦</span> PRIVATE <span>✦</span> ALWAYS BY CHOICE</div></div><div className="auth-form-panel"><div className="auth-form-inner"><Link to="/" className="auth-back"><ArrowLeft size={14}/> Return to the website</Link><img className="auth-brand-logo" src="/logo.svg" alt="Pink Doll Mansion" /><SectionEyebrow>A PRIVATE INVITATION</SectionEyebrow><h1>{mode === 'login' ? 'Your world awaits.' : mode === 'register' ? 'Come a little closer.' : 'A fresh start.'}</h1><p className="auth-subtitle">{mode === 'login' ? 'Sign in to return to your private corner of the mansion.' : mode === 'register' ? 'Create your private account and discover the collections, films and conversations waiting inside.' : 'Choose a new password for your Pink Doll Mansion account.'}</p>{mode !== 'reset' && <div className="auth-tabs"><button onClick={() => { setMode('login'); setError(''); setMessage(''); }} className={mode === 'login' ? 'active' : ''}>Sign in</button><button onClick={() => { setMode('register'); setError(''); setMessage(''); }} className={mode === 'register' ? 'active' : ''}>Create account</button></div>}<form onSubmit={submit} className="auth-form">{mode === 'register' && <><label>Full name<input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" required autoComplete="name"/></label><label>Username<input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose your private username" required autoComplete="username"/></label><label className="adult-consent-check signup-age-check"><input type="checkbox" checked={adultConfirmed} onChange={(e) => setAdultConfirmed(e.target.checked)}/><span>I confirm that I am at least 18 years old and legally allowed to access adult-oriented content where I live.</span></label><label className="adult-consent-check signup-age-check"><input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)}/><span>Send me occasional Pink Doll Mansion updates and membership reminders. I can unsubscribe at any time.</span></label></>}{mode !== 'reset' && <label>Email address<div className="field-with-icon"><Mail size={16}/><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required autoComplete="email"/></div></label>}<label>Password<div className="field-with-icon password-field"><input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" required autoComplete={mode === 'login' ? 'current-password' : 'new-password'}/><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label="Toggle password visibility">{showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}</button></div></label>{mode === 'reset' && <label>Confirm new password<input type={showPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat your new password" required autoComplete="new-password"/></label>}{mode === 'login' && <div className="auth-forgot"><button type="button" onClick={async () => { if (!supabase || !email) { setError('Enter your email address first.'); return; } const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: canonicalAuthRedirect('/login?type=recovery') }); if (resetError) setError(resetError.message); else setMessage('Password reset instructions have been sent if the account exists.'); }}>Forgot password?</button></div>}<button className="button button-dark auth-submit" disabled={loading}>{loading ? 'Please wait…' : mode === 'login' ? 'Sign in to your account' : mode === 'register' ? 'Create my account' : 'Update password'} <ArrowUpRight size={15}/></button></form>{mode !== 'reset' && <><div className="auth-social-divider"><span>OR CONTINUE WITH</span></div><button type="button" className="google-auth-button" onClick={startGoogleAuth} disabled={loading}><GoogleMark/>{loading ? 'Connecting to Google…' : mode === 'register' ? 'Create account with Google' : 'Continue with Google'}<ArrowUpRight size={15}/></button><p className="google-auth-note">Use your Google account for one-step sign-in. We only use your basic profile and email for authentication; we do not read your Gmail inbox. New Google accounts receive the Pink Doll Mansion welcome email.</p></>}{error && <div className="inline-error">{error}</div>}{message && <div className="inline-success"><CheckCircle2 size={16}/>{message}</div>}<div className="auth-privacy"><ShieldCheck size={14}/> Your account and conversations are private.</div><p className="auth-legal">By continuing, you agree to our <Link to="/terms">Terms</Link> and <Link to="/privacy">Privacy Policy</Link>.</p></div></div></div>;
 }
 
 export function DashboardPage() {

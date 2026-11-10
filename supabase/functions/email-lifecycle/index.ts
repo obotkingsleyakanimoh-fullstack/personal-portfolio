@@ -42,20 +42,27 @@ async function handleSignupWelcome(admin: any, userId: string) {
     admin.from('profiles').select('full_name').eq('id', userId).maybeSingle(),
     getPublicTeaser(admin),
   ]);
-  const firstName = String(profile?.full_name || user.user_metadata?.full_name || '').trim().split(/\s+/)[0];
+  const firstName = String(profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || '').trim().split(/\s+/)[0];
+  const isGoogleAccount = user.app_metadata?.provider === 'google' || (Array.isArray(user.identities) && user.identities.some((identity: { provider?: string }) => identity.provider === 'google'));
+  const welcomeBody = isGoogleAccount
+    ? '<p style="font-size:14px;line-height:1.8;color:#765666;margin:20px 0 0">Your Google sign-in is ready. You can return to Pink Doll Mansion using the same Google account whenever you like; there is no separate password to create and no additional email-confirmation link to follow.</p><p style="font-size:13px;line-height:1.8;color:#765666;margin:18px 0 0">You can <a href="https://pinkdollmansion.com/membership" style="color:#b83268">compare the membership rooms</a> and read our <a href="https://pinkdollmansion.com/privacy" style="color:#b83268">privacy information</a> before choosing your access.</p>'
+    : '<p style="font-size:14px;line-height:1.8;color:#765666;margin:20px 0 0">A separate confirmation message has been sent to verify your email address. Confirm it before signing in or purchasing a membership. Your private originals remain protected behind account and access checks.</p><p style="font-size:13px;line-height:1.8;color:#765666;margin:18px 0 0">You can also <a href="https://pinkdollmansion.com/membership" style="color:#b83268">compare the membership rooms</a> and read our <a href="https://pinkdollmansion.com/privacy" style="color:#b83268">privacy information</a> before choosing your access.</p>';
   const html = emailLayout({
     preheader: 'Thank you for creating your Pink Doll Mansion account.',
     eyebrow: 'WELCOME TO THE MANSION',
     title: firstName ? `A warm welcome, ${firstName}.` : 'Your invitation has arrived.',
     intro: 'Thank you for creating an account at Pink Doll Mansion. This is your private place to explore the public gallery, discover membership rooms and manage your own access.',
-    bodyHtml: '<p style="font-size:14px;line-height:1.8;color:#765666;margin:20px 0 0">A separate confirmation message has been sent to verify your email address. Confirm it before signing in or purchasing a membership. Your private originals remain protected behind account and access checks.</p><p style="font-size:13px;line-height:1.8;color:#765666;margin:18px 0 0">You can also <a href="https://pinkdollmansion.com/membership" style="color:#b83268">compare the membership rooms</a> and read our <a href="https://pinkdollmansion.com/privacy" style="color:#b83268">privacy information</a> before choosing your access.</p>',
+    bodyHtml: welcomeBody,
     imageUrl: teaser.url,
     imageAlt: teaser.title ? `Public preview: ${teaser.title}` : 'A public preview from Pink Doll Mansion',
     buttonUrl: 'https://pinkdollmansion.com/gallery',
     buttonText: 'Explore the public gallery',
     footerNote: 'This is a one-time account welcome message. Membership and promotional reminders are sent only when you have opted in.',
   });
-  const result = await sendEmailOnce(admin, { userId, eventKey: 'signup_welcome', to: user.email, subject: 'Welcome to Pink Doll Mansion — your private invitation', html });
+  const subject = isGoogleAccount
+    ? 'Welcome to Pink Doll Mansion — your Google sign-in is ready'
+    : 'Welcome to Pink Doll Mansion — your private invitation';
+  const result = await sendEmailOnce(admin, { userId, eventKey: 'signup_welcome', to: user.email, subject, html });
   if (!result.sent && !result.alreadySent) console.error('Welcome email failed:', result.error);
   return json({ ok: result.sent, alreadySent: Boolean(result.alreadySent), error: result.error || undefined }, result.error && !result.alreadySent ? 502 : 200);
 }
