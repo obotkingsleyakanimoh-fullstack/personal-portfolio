@@ -1,0 +1,49 @@
+PINK DOLL MANSION — GOOGLE BRAND VERIFICATION CHECKLIST
+
+THE PUBLIC POLICY URL
+https://pinkdollmansion.com/privacy
+
+The privacy policy must load while signed out, on the same domain as the homepage, and the exact same URL must be entered in Google Auth Platform > Branding. The patch also adds a visible Privacy Policy link to the public homepage.
+
+1. DEPLOY THE WEBSITE UPDATE
+- Replace src/pages/Pages.tsx with the file in this patch.
+- Run `npm ci` and `npm run build`.
+- Commit and push the update to the GitHub branch connected to Cloudflare.
+- After deployment, open an Incognito window and visit:
+  https://pinkdollmansion.com/
+  https://pinkdollmansion.com/privacy
+  https://pinkdollmansion.com/terms
+- Confirm the privacy page opens without login and the homepage has a visible Privacy Policy link.
+
+2. VERIFY DOMAIN OWNERSHIP IN GOOGLE SEARCH CONSOLE
+- Sign in to Google Search Console with the Google account that is also an Owner or Editor on the Google Cloud project `pinkdoll`.
+- Add a new property and choose the `Domain` property type.
+- Enter: `pinkdollmansion.com` (do not include https:// or www).
+- Google will display a TXT verification value.
+- Open Cloudflare > pinkdollmansion.com > DNS > Records > Add record.
+- Type: TXT
+- Name: @
+- Content: paste the exact `google-site-verification=...` value shown by Search Console.
+- TTL: Auto.
+- Save the record. Do not replace or delete existing MX, SPF, DKIM or other DNS records.
+- Return to Search Console and click Verify.
+- Keep the TXT record in DNS after verification. If Google cannot detect it immediately, wait for DNS propagation and retry.
+
+3. RECHECK GOOGLE AUTH PLATFORM BRANDING
+Use these exact public URLs:
+- App homepage: https://pinkdollmansion.com/
+- Privacy policy: https://pinkdollmansion.com/privacy
+- Terms of service: https://pinkdollmansion.com/terms
+- Authorized domain: pinkdollmansion.com
+
+Use the same privacy URL in the website homepage link and the Google Auth Platform Branding page. The authorized domain should be the root domain, not a URL or path.
+
+4. REQUEST RE-VERIFICATION
+- After Search Console shows the domain as verified, allow Google's systems time to update. The message in your screenshot asks you to wait 24 hours after verifying ownership before retrying.
+- Return to Google Auth Platform > Branding.
+- Open the verification-issues panel.
+- Choose “I have fixed the issues” only after the website and domain steps above are complete.
+- Request verification again.
+
+IMPORTANT
+Google makes the final decision. This update addresses the specific issues in your screenshot, but it cannot guarantee approval. Make sure the policy remains accurate if you enable analytics, new sign-in scopes, new payment processors or additional data collection.

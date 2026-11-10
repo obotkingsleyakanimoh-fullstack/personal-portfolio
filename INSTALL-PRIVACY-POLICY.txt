@@ -1,0 +1,27 @@
+PINK DOLL MANSION — PRIVACY POLICY PATCH
+
+FILES
+- src/pages/Pages.tsx: expanded the existing LegalPage privacy content.
+- PRIVACY-POLICY-REVIEW.md: readable copy for review.
+
+INSTALL
+1. Back up your current src/pages/Pages.tsx.
+2. Replace it with the file in this patch. It contains the expanded privacy policy and adds a visible Privacy Policy + Terms link to the homepage.
+3. Do not rerun database migrations; this is a frontend policy-content update only.
+4. Run: npm ci
+5. Run: npm run build
+6. Commit and push the change so Cloudflare deploys it.
+
+PUBLIC URL
+https://pinkdollmansion.com/privacy
+
+GOOGLE CLOUD BRANDING
+Use that exact URL for the Privacy Policy link in Google Auth Platform.
+Use https://pinkdollmansion.com/ as the homepage and https://pinkdollmansion.com/terms as the terms link.
+
+IMPORTANT
+- Verify that /privacy opens in an Incognito window without signing in.
+- Ensure the homepage footer includes a visible Privacy Policy link to /privacy.
+- Verify pinkdollmansion.com in Google Search Console using the DNS TXT record Google provides. The website policy does not by itself prove domain ownership.
+- This policy must reflect the actual services and practices you operate. Review the listed providers and update the wording if your live deployment differs.
+- Google makes the final verification decision; no policy wording can guarantee approval.
